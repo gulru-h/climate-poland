@@ -1,0 +1,123 @@
+---
+title: "polandshort"
+output: html_document
+date: "2025-03-13"
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r}
+library(careless)
+library(ggplot2)
+library(car)
+library(psych)
+library(dplyr)
+library(gtsummary)
+library(lavaan)
+library(tidySEM)
+library(haven)
+library(semTools)
+library(corrplot)
+library(lavaan)
+```
+
+
+
+Security Anova
+```{r}
+#3 group
+groupcom <- aov(ssec ~ gr_1+tsec, data=forsem_s)
+summary(groupcom)
+TukeyHSD(groupcom)
+
+#only manipulation
+groupcom_man <- aov(ssec ~ gr+tsec, data=onlymanipulation)
+summary(groupcom_man)
+TukeyHSD(groupcom_man)
+
+#comparisons with control and between the experimental conditions
+#are significant
+```
+
+Freedom Anova
+```{r}
+#3 group
+groupcom_free <- aov(sfree ~ gr, data=mand)
+summary(groupcom_free)
+TukeyHSD(groupcom_free)
+
+#only manipulation
+groupcom_manfree <- aov(sfree ~ gr, data=onlymanipulation)
+summary(groupcom_manfree)
+TukeyHSD(groupcom_manfree)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+
+
+#H5: The perceived effectiveness of the proposed policy will not differ between 
+#the mandatory and the voluntary conditions.
+a <- aov(man_eff~gr, data=onlymanipulation)
+summary(a)
+TukeyHSD(a)
+#mandatory policy seen as more effective
+
+library(plyr)
+legend_title <- "Group"
+cdat <- ddply(onlymanipulation, "gr", summarise, rating.mean=mean(man_eff))
+cdat
+ggplot(onlymanipulation, aes(x=man_eff, color=gr)) + geom_density()+
+  labs(color = "Group")+
+  geom_vline(data=cdat, aes(xintercept=rating.mean,  colour=gr),linetype="dashed", linewidth=1)+
+  xlab("Need for Security (State)")+
+  scale_color_manual(labels = c("voluntary", "mandatory", "control"), values = c( "red","lightgreen")) 
+
+with(onlymanipulation, aggregate(man_acc ~ gr, FUN = mean))
+
+#H6: Participants in the mandatory condition will perceive the policy to be less 
+#acceptable in comparison to those in the voluntary and control conditions.
+
+b <- aov(man_acc~gr, data=onlymanipulation)
+summary(b)
+TukeyHSD(b)
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
