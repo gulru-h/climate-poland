@@ -29,7 +29,9 @@ table2 <-
 
 ##correlations######
 #method1
-cors <- subset(mand[,c(16, 15, 28:30, 150, 193:202, 145:149)])
+cors <- subset(mand[,c(199, 200,197, 198,149, 28,196, 201, 202, 203,204,
+                       210, 209, 212, 211, 194, 195)])
+
 corssem <- subset(forsem[,c(16, 15, 28:30, 150,185:187,  193:202, 204:213)])
 
 cors1 <- cors[mand$gr==1, ]
@@ -151,21 +153,28 @@ range(cors$finan, na.rm=T)
 
 
 cors <- subset(mand[,c(159, 16,15, 14, 28:29, 196,193, 150, 197:200, 195, 201:204, 149)])
-cors1 <- cors[mand$c_0001==1, ]
-cors2 <- cors[mand$c_0001==2, ]
-cors3 <- cors[mand$c_0001==3, ]
+cors1 <- cors[mand$gr==1, ]
+cors2 <- cors[mand$gr==2, ]
+cors3 <- cors[mand$gr==3, ]
+cors <- subset(mand[,c(16,15, 14, 28:29, 196,193, 150, 197:200, 195, 201:204, 149)])
+cors1 <- cors[mand$gr==1, ]
+cors2 <- cors[mand$gr==2, ]
+cors3 <- cors[mand$gr==3, ]
+corssmall <- subset(onlymanipulation[,c(16,15, 14, 28:29, 196,193, 150, 197:200, 195, 201:204, 149)])
+M <- cor(corssmall, use= "pairwise.complete.obs")
 
-corssmall <- subset(onlymanipulation[,c(159, 16,15, 14, 28:29, 196,193, 150, 197:200, 195, 201:204, 149)])
+M <- cor(cors1, use= "pairwise.complete.obs")
+M <- cor(cors2, use= "pairwise.complete.obs")
 
-displaynames<- c("gr", "Left Wing Media", "Right Wing Media",
+displaynames<- c("Left Wing Media", "Right Wing Media",
                  "Social Media", "Active media use", "Passive media use",
                  "Financial Burden",
                  "SES", "Financial Situation",
                  "(T)Need for Security", "(T)Need for Freedom", 
                  "(S)Need for Security", "(S)Need for Freedom",
                  "Acceptability","Anti-mainstream narratives",
-                 "Mainstream Narratives", "Anti-mainstream n. (Aggreement)",
-                 "Mainstream n. (Aggreement)","Trust in the government")
+                 "Mainstream Narratives", "Anti-mainstream n. (Agreement)",
+                 "Mainstream n. (Agreement)","Trust in the government")
 
 
 names(onlymanipulation)
@@ -173,13 +182,14 @@ names(onlymanipulation)
 
 #visualisation
 colnames(corssmall) <- displaynames
-
+colnames(M) <- displaynames
+rownames(M) <-displaynames
 # Split data by group
 grouped_data <- split(corssmall, corssmall$gr)
 
 # Create correlation matrix for each group
 cor_matrices <- lapply(grouped_data, function(grouped_df) {
-  cor(grouped_df[, 2:18])  # Exclude the grouping column
+  cor(grouped_df[, 2:19])  # Exclude the grouping column
 })
 
 # View the result
@@ -191,7 +201,7 @@ library(ggcorrplot)
 
 # Compute and plot for each group
 for (gr in names(grouped_data)) {
-  cor_mat <- cor(grouped_data[[gr]][, 2:18])
+  cor_mat <- cor(grouped_data[[gr]][, 2:19])
   
   print(ggcorrplot(cor_mat, 
                    lab = TRUE, 
@@ -214,42 +224,49 @@ do.call(gridExtra::grid.arrange, c(plots, ncol = length(plots)))
 
 #ungrouped
 p.mat<-cor_pmat(cor_mat)
-ggcorrplot(cor_mat, lab= T, type = "upper")
+
+ggcorrplot(M, lab= T, type = "upper")
+
+
+cor(onlymanipulation$ssec, onlymanipulation$institution_trust_5, use = "pairwise.complete.obs")
 
 
 
 
 
+correlation_matrix(cors1, type = "spearman", use = "lower", replace_diagonal = T)
+save_correlation_matrix(cors1,
+                        filename = "cors1.csv",
+                        digits= 3, use="lower")
+
+save_correlation_matrix(cors2,
+                        filename = "cors2.csv",
+                        digits= 3, use="lower")
+
+save_correlation_matrix(cors3,
+                        filename = "cors3.csv",
+                        digits= 3, use="lower")
+
+sapply(cors1, mean, na.rm=T)
+sapply(cors2, mean, na.rm=T)
+sapply(cors3, mean, na.rm=T)
+
+
+sapply(cors1, sd, na.rm=T)
+sapply(cors2, sd, na.rm=T)
+sapply(cors3, sd, na.rm=T)
 
 
 
+a<- aov(micronarratives~gr, data=forsem1)
+summary(a)
+#no group differences
 
+forsem1<- forsem[forsem$age_5 < 90, ] 
 
-
-
-
-
-microshares <- subset(forsem[,c("q1_sm_3","q2_sm_3","q3_sm_3","q4_sm_3")])
-forsem$microshares <- apply(microshares, 1, sum, na.rm=T)
-
-mainstreamshares <- subset(forsem[,c("q5_sm_3","q6_sm_3","q7_sm_3","q8_sm_3")])
-forsem$mainstreamshares <- apply(mainstreamshares, 1, sum, na.rm=T)
-
-microcomment <- subset(forsem[,c("q1_sm_4","q2_sm_4","q3_sm_4","q4_sm_4")])
-forsem$microcomment <- apply(microcomment, 1, sum, na.rm=T)
-
-mainstreamcomment <- subset(forsem[,c("q5_sm_4","q6_sm_4","q7_sm_4","q8_sm_4")])
-forsem$mainstreamcomment <- apply(mainstreamcomment, 1, sum, na.rm=T)
-
-microhash <- subset(forsem[,c("q1_sm_5","q2_sm_5","q3_sm_5","q4_sm_5")])
-forsem$microhash <- apply(microhash, 1, sum, na.rm=T)
-
-mainstreamhash <- subset(forsem[,c("q5_sm_5","q6_sm_5","q7_sm_5","q8_sm_5")])
-forsem$mainstreamhash <- apply(mainstreamhash, 1, sum, na.rm=T)
-
-
-
-
+forsem1$gender <- as.factor(forsem1$gender)
+b<- lm(tsec~gender, data=forsem1)
+summary(b)
 
 
 

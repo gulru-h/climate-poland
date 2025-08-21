@@ -60,7 +60,7 @@ clean$sfree <- apply(sfree, 1, mean, na.rm=T)
 
 clean$finan[clean$finan == "1888"]<- NA
 
-
+mand <- clean
 
 ##narratives####
 #perform EFA
@@ -129,9 +129,78 @@ table(mand$gr)
 rm(onlymanipulation)
 onlymanipulation <- mand[mand$gr ==1|mand$gr ==2 , ]
 
+contr <- mand[mand$gr ==3, ]
+vol<- mand[mand$gr ==2, ]
+mandat<- mand[mand$gr ==1, ]
+
 #create the two levels 
 onlymanipulation$gr <- ordered(onlymanipulation$gr, levels = c("1", "2"))
 
+#install.packages("fastDummies")
+
+# Load the library
+library(fastDummies)
+
+
+# Create dummy variable
+onlymanipulation <- fastDummies::dummy_cols(onlymanipulation, 
+                                            select_columns = "gr")
+mand <- dummy_cols(mand, select_columns = "gr")
+
+microlikes <- subset(forsem[,c("q1_sm_2","q2_sm_2","q3_sm_2","q4_sm_2")])
+microlikes1 <- subset(mand[,c("q1_sm_2","q2_sm_2","q3_sm_2","q4_sm_2")])
+
+forsem$microlikes <- apply(microlikes, 1, sum, na.rm=T)
+mand$microlikes <- apply(microlikes1, 1, sum, na.rm=T)
+
+mainstreamlikes <- subset(forsem[,c("q5_sm_2","q6_sm_2","q7_sm_2","q8_sm_2")])
+mainstreamlikes1 <- subset(mand[,c("q5_sm_2","q6_sm_2","q7_sm_2","q8_sm_2")])
+
+forsem$mainstreamlikes <- apply(mainstreamlikes, 1, sum, na.rm=T)
+mand$mainstreamlikes <- apply(mainstreamlikes1, 1, sum, na.rm=T)
+
+microdislikes <- subset(forsem[,c("q1_sm_6","q2_sm_6","q3_sm_6","q4_sm_6")])
+forsem$microdislikes <- apply(microdislikes, 1, sum, na.rm=T)
+microdislikes1 <- subset(mand[,c("q1_sm_6","q2_sm_6","q3_sm_6","q4_sm_6")])
+mand$microdislikes <- apply(microdislikes1, 1, sum, na.rm=T)
+
+mainstreamdislikes <- subset(forsem[,c("q5_sm_6","q6_sm_6","q7_sm_6","q8_sm_6")])
+forsem$mainstreamdislikes <- apply(mainstreamdislikes, 1, sum, na.rm=T)
+mainstreamdislikes1 <- subset(mand[,c("q5_sm_6","q6_sm_6","q7_sm_6","q8_sm_6")])
+mand$mainstreamdislikes <- apply(mainstreamdislikes1, 1, sum, na.rm=T)
+
+
+
+
+
+microshares <- subset(forsem[,c("q1_sm_3","q2_sm_3","q3_sm_3","q4_sm_3")])
+microshares1 <- subset(mand[,c("q1_sm_3","q2_sm_3","q3_sm_3","q4_sm_3")])
+forsem$microshares <- apply(microshares, 1, sum, na.rm=T)
+mand$microshares <- apply(microshares1, 1, sum, na.rm=T)
+
+mainstreamshares <- subset(forsem[,c("q5_sm_3","q6_sm_3","q7_sm_3","q8_sm_3")])
+mainstreamshares1 <- subset(mand[,c("q5_sm_3","q6_sm_3","q7_sm_3","q8_sm_3")])
+
+forsem$mainstreamshares <- apply(mainstreamshares, 1, sum, na.rm=T)
+mand$mainstreamshares <- apply(mainstreamshares1, 1, sum, na.rm=T)
+
+microcomment <- subset(forsem[,c("q1_sm_4","q2_sm_4","q3_sm_4","q4_sm_4")])
+microcomment1 <- subset(mand[,c("q1_sm_4","q2_sm_4","q3_sm_4","q4_sm_4")])
+
+forsem$microcomment <- apply(microcomment, 1, sum, na.rm=T)
+mand$microcomment <- apply(microcomment1, 1, sum, na.rm=T)
+
+mainstreamcomment <- subset(forsem[,c("q5_sm_4","q6_sm_4","q7_sm_4","q8_sm_4")])
+mainstreamcomment1 <- subset(mand[,c("q5_sm_4","q6_sm_4","q7_sm_4","q8_sm_4")])
+
+forsem$mainstreamcomment <- apply(mainstreamcomment, 1, sum, na.rm=T)
+mand$mainstreamcomment <- apply(mainstreamcomment1, 1, sum, na.rm=T)
+
+microhash <- subset(forsem[,c("q1_sm_5","q2_sm_5","q3_sm_5","q4_sm_5")])
+forsem$microhash <- apply(microhash, 1, sum, na.rm=T)
+
+mainstreamhash <- subset(forsem[,c("q5_sm_5","q6_sm_5","q7_sm_5","q8_sm_5")])
+forsem$mainstreamhash <- apply(mainstreamhash, 1, sum, na.rm=T)
 
 
 

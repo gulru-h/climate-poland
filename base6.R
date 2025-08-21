@@ -202,14 +202,16 @@ range(cors$finan, na.rm=T)
 #financial security in comparison to those in the voluntary and control conditions. 
 
 #3 group
+mand$gr <- as.factor(mand$gr)
 groupcom <- aov(ssec ~ gr+tsec, data=mand)
 summary(groupcom)
 TukeyHSD(groupcom)
 
 #only manipulation
-groupcom_man <- aov(ssec ~ gr+tsec, data=onlymanipulation)
+groupcom_man <- aov(ssec ~ gr, data=onlymanipulation)
 summary(groupcom_man)
 TukeyHSD(groupcom_man)
+psych::cohen.d(ssec ~ gr, data=onlymanipulation)
 
 #comparisons with control and between the experimental conditions
 #are significant
@@ -519,14 +521,65 @@ ggpredict(m2.1, terms = c("institution_trust_5[1:7 by=0.1]", "gr_1")) |> plot()
 #(exploratory) H4: Active media use will moderate the relationship between 
 #perceived threat to security and the choice of micro and mainstream narratives.
 
-m3 <- lm(micronarratives~ ssec*active_soc_media+tsec, data=onlymanipulation)
-summary(m3)
-ggpredict(m3, terms = c("ssec[1:7 by=0.1]", "active_soc_media[1:6 by=2]")) |> plot()
+m1 <- lm(micronarratives~ ssec*active_soc_media+tsec, data=onlymanipulation)
+m1.a <- summary(m1)
+ggpredict(m1, terms = c("ssec[1:7 by=0.1]", "active_soc_media[1:6 by=2]")) |> plot()
 #non-sig
 
-m3 <- lm(mainstream~ ssec*active_soc_media+tsec, data=onlymanipulation)
-summary(m3)
+m2 <- lm(mainstream~ ssec*active_soc_media+tsec, data=onlymanipulation)
+m2.a <- summary(m2)
+ggpredict(m2, terms = c("ssec[1:7 by=0.1]", "active_soc_media[1:6 by=2]")) |> plot()
+
+
+m3 <- lm(mainstream_ag~ ssec*active_soc_media+tsec, data=onlymanipulation)
+m3.a <- summary(m3)
 ggpredict(m3, terms = c("ssec[1:7 by=0.1]", "active_soc_media[1:6 by=2]")) |> plot()
+
+
+m4 <- lm(micronarratives_ag~ ssec*active_soc_media+tsec, data=onlymanipulation)
+m4.a <- summary(m4)
+ggpredict(m4, terms = c("ssec[1:7 by=0.1]", "active_soc_media[1:6 by=2]")) |> plot()
+#non-sig
+
+library(apaTables)
+
+
+
+
+models <- list(m1, m2, m3, m4, m5, m6, m7, m8)
+
+# Apply apa.aov.table to each model and store results
+results <- lapply(seq_along(models), function(i) {
+  apa.aov.table(models[[i]], table.number = i)
+})
+
+for (i in seq_along(models)) {
+  cat("\n--- Table", i, "---\n")
+  print(apa.aov.table(models[[i]], table.number = i))
+}
+
+
+#freedom
+
+m5 <- lm(micronarratives~ sfree*active_soc_media+tfree, data=onlymanipulation)
+m5.a <- summary(m5)
+ggpredict(m5, terms = c("sfree[1:7 by=0.1]", "active_soc_media[1:6 by=2]")) |> plot()
+#non-sig
+
+m6 <- lm(mainstream~ sfree*active_soc_media+tfree, data=onlymanipulation)
+m6.a <- summary(m6)
+ggpredict(m6, terms = c("sfree[1:7 by=0.1]", "active_soc_media[1:6 by=2]")) |> plot()
+
+
+m7 <- lm(mainstream_ag~ sfree*active_soc_media+tfree, data=onlymanipulation)
+m7.a <- summary(m7)
+ggpredict(m7, terms = c("sfree[1:7 by=0.1]", "active_soc_media[1:6 by=2]")) |> plot()
+
+
+m8 <- lm(micronarratives_ag~ sfree*active_soc_media+tfree, data=onlymanipulation)
+m8.a <- summary(m8)
+ggpredict(m8, terms = c("sfree[1:7 by=0.1]", "active_soc_media[1:6 by=2]")) |> plot()
+#non-sig
 
 #non-sig
 #ssec mildly significant (when interaction removed active media use almost significant)
@@ -674,244 +727,6 @@ estimates_med.fit[61:62, ]
 
 
 
-?sem()
-
-cor(forsem$main_endorsement_soc_media, forsem$antim_endorsement_soc_media)
-
-soc.model <- '
-  needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3
-  traitneedsecurity=~ security_1+security_2+security_3
-
-  antim_endorsement_soc_media ~b1*needsecurity+traitneedsecurity
-  main_endorsement_soc_media ~b2*needsecurity+traitneedsecurity
-
-
-  needsecurity ~ a1*gr_1
-  antim_endorsement_soc_media ~ gr_1
-  main_endorsement_soc_media ~gr_1
-  
-ind1 := a1*b1
-ind2 := a1*b2
-
-'
-
-soc.fit <- sem(soc.model, data = forsem, estimator = "ML", missing = "FIML",
-               se = "bootstrap",bootstrap = 500L, parallel ="snow")
-summary(soc.fit, fit.measures=T, standardized = T, rsquare=TRUE)
-estimates_med.fit <- parameterEstimates(med.fit, standardized=TRUE, boot.ci.type="perc", level=0.95,
-                                        zstat = FALSE, pvalue = FALSE, output = "data.frame")
-
-View(estimates_med.fit)
-estimates_med.fit[61:62, ]
-
-
-pfad_layout<- get_layout("","traitneedsecurity", "", "","antim_endorsement_soc_media",
-                         "","", "","","",
-                         "gr_1","","","","",
-                         "","","","","main_endorsement_soc_media",
-                         "","needsecurity","","","",
-                         rows = 5)
-
-tidySEM::graph_sem(model = soc.fit, layout = pfad_layout) 
-
-
-  
-m.model_a <- '
-  security =~ security_freedom_1+security_freedom_2+security_freedom_3
-  Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
-  Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
-  traitsecurity=~ security_1+security_2+security_3
-
-  Micronarratives ~security+traitsecurity
-  Mainstream ~security+traitsecurity
-
-
-  security ~ 0*gr_2
-  Micronarratives ~ 0*gr_2
-  Mainstream ~0*gr_2
-
-'
-m.fit_a <- sem(m.model_a, data = forsem, estimator = "MLR", missing = "FIML",
-             group.equal = c("loadings", "intercepts", "means", "residuals", "residual.covariances", "lv.variances", "lv.covariances"))
-summary(m.fit_a, fit.measures=T, standardized = T)
-
-
-a <- anova(m.fit, m.fit_a)
-#significantly worse than the non-constrained model
-
-
-m.model_b <- '
-  security =~ security_freedom_1+security_freedom_2+security_freedom_3
-  Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
-  Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
-  traitsecurity=~ security_1+security_2+security_3
-
-  Micronarratives ~security+traitsecurity
-  Mainstream ~security+traitsecurity
-
-
-  security ~ 0*gr_2
-  Micronarratives ~ gr_2
-  Mainstream ~gr_2
-
-'
-m.fit_b <- sem(m.model_b, data = forsem, estimator = "MLR", missing = "FIML",
-               group.equal = c("loadings", "intercepts", "means", "residuals", "residual.covariances", "lv.variances", "lv.covariances"))
-summary(m.fit_b, fit.measures=T, standardized = T)
-
-
-b <- anova(m.fit, m.fit_b)
-
-
-
-
-m.model_c <- '
-  security =~ security_freedom_1+security_freedom_2+security_freedom_3
-  Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
-  Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
-  traitsecurity=~ security_1+security_2+security_3
-
-  Micronarratives ~security+traitsecurity
-  Mainstream ~security+traitsecurity
-
-
-  security ~ gr_2
-  Micronarratives ~ 0*gr_2
-  Mainstream ~gr_2
-
-'
-m.fit_c <- sem(m.model_c, data = forsem, estimator = "MLR", missing = "FIML",
-               group.equal = c("loadings", "intercepts", "means", "residuals", "residual.covariances", "lv.variances", "lv.covariances"))
-summary(m.fit_c, fit.measures=T, standardized = T)
-
-
-c <- anova(m.fit, m.fit_c)
-
-
-
-m.model_d <- '
-  security =~ security_freedom_1+security_freedom_2+security_freedom_3
-  Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
-  Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
-  traitsecurity=~ security_1+security_2+security_3
-
-  Micronarratives ~security+traitsecurity
-  Mainstream ~security+traitsecurity
-
-
-  security ~ gr_2
-  Micronarratives ~ gr_2
-  Mainstream ~0*gr_2
-
-'
-m.fit_d <- sem(m.model_d, data = forsem, estimator = "MLR", missing = "FIML",
-               group.equal = c("loadings", "intercepts", "means", "residuals", "residual.covariances", "lv.variances", "lv.covariances"))
-summary(m.fit_d, fit.measures=T, standardized = T)
-
-
-d <- anova(m.fit, m.fit_d)
-
-
-
-m.model_final <- '
-  security =~ security_freedom_1+security_freedom_2+security_freedom_3
-  Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
-  Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
-  traitsecurity=~ security_1+security_2+security_3
-
-  Micronarratives ~security+traitsecurity
-  Mainstream ~security+traitsecurity
-
-
-  security ~ gr_2
-'
-m.fit_final <- sem(m.model_final, data = forsem, estimator = "MLR", missing = "FIML",
-               group.equal = c("loadings", "intercepts", "means", "residuals", "residual.covariances", "lv.variances", "lv.covariances"))
-summary(m.fit_final, fit.measures=T, standardized = T)
-
-
-anova(m.fit, m.fit_final)
-
-
-
-
-pfad_layout<- get_layout("","traitsecurity", "", "","Micronarratives",
-                         "","", "","","",
-                         "gr_2","","","","",
-                         "","","","","Mainstream",
-                         "","security","","","",
-                         rows = 5)
-
-tidySEM::graph_sem(model = m.fit_final, layout = pfad_layout) 
-
-
-library(knitr)
-
-
-table_fit <- matrix(NA, nrow = 5, ncol = 9)
-colnames(table_fit) = c("Model", "X2", "df", "CFI", "RMSEA", "SRMR", "X2 Diff",
-                        "Pr(>X2)", "AIC")
-table_fit[1, ] <- c("Overall Model", round(fitmeasures(m.fit, 
-                                                       c("chisq", "df", "cfi",
-                                                         "rmsea", "srmr")),3),
-                    NA, NA, round((a[1,2])))
-
-table_fit[2, ] <- c("Constrain all ~ gr", round(fitmeasures(m.fit_a, 
-                                                            c("chisq", "df", "cfi",
-                                                              "rmsea", "srmr")),3),
-                    round((a[2,5]),3), round((a[2,7]),3), round((a[2,2])))
-table_fit[3, ] <- c("Constrain ssec~gr", round(fitmeasures(m.fit_b, 
-                                                           c("chisq", "df", "cfi",
-                                                             "rmsea", "srmr")),3),
-                    round((b[2,5]),3), round((b[2,7]),3),round((b[2,2])))
-table_fit[4, ] <- c("Constrain Micro~gr", round(fitmeasures(m.fit_c, 
-                                                            c("chisq", "df", "cfi",
-                                                              "rmsea", "srmr")),3),
-                    round((c[2,5]),3), round((c[2,7]),3),round((c[2,2])))
-table_fit[5, ] <- c("Constrain mainstream~gr", round(fitmeasures(m.fit_d, 
-                                                                 c("chisq", "df", "cfi",
-                                                                   "rmsea", "srmr", "")),3), 
-                    round((d[2,5]),3), round((d[2,7]),3), round((d[2,2])))
-
-
-kable(table_fit)
-
-
-
-t.model <- '
-  needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3
-  Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
-  Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
-  traitneedsecurity=~ security_1+security_2+security_3
-
-  Micronarratives ~needsecurity+traitneedsecurity+institution_trust_5
-  Mainstream ~needsecurity+traitneedsecurity+institution_trust_5
-
-
-  needsecurity ~ gr_2
-  institution_trust_5~ gr_2 
-  institution_trust_5 ~ needsecurity
-  
-
-'
-
-
-t.fit <- sem(t.model, data = forsem, estimator = "MLR", missing = "FIML",
-             group.equal = c("loadings", "intercepts", "means", "residuals", "residual.covariances", "lv.variances", "lv.covariances"))
-summary(t.fit, fit.measures=T, standardized = T)
-
-
-pfad_layout<- get_layout("","traitneedsecurity", "", "","Micronarratives",
-                         "","", "","","",
-                         "gr_2","institution_trust_5","","","",
-                         "","","","","Mainstream",
-                         "needsecurity","","","","",
-                         rows = 5)
-
-tidySEM::graph_sem(model = t.fit, layout = pfad_layout) 
-
-
-
 
 tmed.model <- '
   needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3
@@ -982,188 +797,6 @@ View(estimates_talt.fit)
 
 
 estimates_talt.fit[64:65, ]
-
-
-
-pfad_layout<- get_layout("","traitneedsecurity", "Micronarratives", "","",
-                         "","", "","","",
-                         "gr_2","","","","institution_trust_5",
-                         "","","","Mainstream","",
-                         "needsecurity","","","","",
-                         rows = 5)
-
-tidySEM::graph_sem(model = talt.fit, layout = pfad_layout) 
-
-
-
-t.model1 <- '
-  needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3
-  Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
-  Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
-  traitneedsecurity=~ security_1+security_2+security_3
-
-  Micronarratives ~needsecurity+traitneedsecurity+0*institution_trust_5
-  Mainstream ~needsecurity+traitneedsecurity+institution_trust_5
-
-
-  needsecurity ~ gr_2
-  institution_trust_5~ gr_2 
-  institution_trust_5 ~ needsecurity
-'
-
-t.fit1 <- sem(t.model1, data = forsem, estimator = "MLR", missing = "FIML",
-             group.equal = c("loadings", "intercepts", "means", "residuals", "residual.covariances", "lv.variances", "lv.covariances"))
-summary(t.fit1, fit.measures=T, standardized = T)
-
-t1 <- anova(t.fit, t.fit1)
-
-
-
-
-
-#sign
-
-
-
-
-
-t.model2 <- '
-  needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3
-  Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
-  Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
-  traitneedsecurity=~ security_1+security_2+security_3
-
-  Micronarratives ~needsecurity+traitneedsecurity+institution_trust_5
-  Mainstream ~needsecurity+traitneedsecurity+0*institution_trust_5
-
-
-  needsecurity ~ gr_2
-  institution_trust_5~ gr_2 
-  institution_trust_5 ~ needsecurity
-'
-
-t.fit2 <- sem(t.model2, data = forsem, estimator = "MLR", missing = "FIML",
-              group.equal = c("loadings", "intercepts", "means", "residuals", "residual.covariances", "lv.variances", "lv.covariances"))
-summary(t.fit2, fit.measures=T, standardized = T)
-
-t2 <- anova(t.fit, t.fit2)
-#sign
-
-
-
-
-t.model3 <- '
-  needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3
-  Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
-  Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
-  traitneedsecurity=~ security_1+security_2+security_3
-
-  Micronarratives ~needsecurity+traitneedsecurity+institution_trust_5
-  Mainstream ~needsecurity+traitneedsecurity+0*institution_trust_5
-
-
-  needsecurity ~ gr_2
-  institution_trust_5~ gr_2 
-  institution_trust_5 ~ needsecurity
-'
-
-t.fit3 <- sem(t.model3, data = forsem, estimator = "MLR", missing = "FIML",
-              group.equal = c("loadings", "intercepts", "means", "residuals", "residual.covariances", "lv.variances", "lv.covariances"))
-summary(t.fit3, fit.measures=T, standardized = T)
-
-t3 <- anova(t.fit, t.fit3)
-#sign
-
-
-
-t.model4 <- '
-  needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3
-  Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
-  Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
-  traitneedsecurity=~ security_1+security_2+security_3
-
-  Micronarratives ~needsecurity+traitneedsecurity+institution_trust_5
-  Mainstream ~needsecurity+traitneedsecurity+institution_trust_5
-
-
-  needsecurity ~ gr_2
-  institution_trust_5~ 0*gr_2 
-  institution_trust_5 ~ needsecurity
-'
-
-t.fit4 <- sem(t.model4, data = forsem, estimator = "MLR", missing = "FIML",
-              group.equal = c("loadings", "intercepts", "means", "residuals", "residual.covariances", "lv.variances", "lv.covariances"))
-summary(t.fit3, fit.measures=T, standardized = T)
-
-t4 <- anova(t.fit, t.fit4)
-# non sign
-
-
-
-
-
-t.model5 <- '
-  needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3
-  Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
-  Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
-  traitneedsecurity=~ security_1+security_2+security_3
-
-  Micronarratives ~needsecurity+traitneedsecurity+institution_trust_5
-  Mainstream ~needsecurity+traitneedsecurity+institution_trust_5
-
-
-  needsecurity ~ gr_2
-  institution_trust_5~ gr_2 
-  institution_trust_5 ~ 0*needsecurity
-'
-
-t.fit5 <- sem(t.model5, data = forsem, estimator = "MLR", missing = "FIML",
-              group.equal = c("loadings", "intercepts", "means", "residuals", "residual.covariances", "lv.variances", "lv.covariances"))
-summary(t.fit5, fit.measures=T, standardized = T)
-
-t5 <- anova(t.fit, t.fit5)
-# sign
-
-
-
-
-
-
-
-
-table_fit <- matrix(NA, nrow = 5, ncol = 9)
-colnames(table_fit) = c("Model", "X2", "df", "CFI", "RMSEA", "SRMR", "X2 Diff",
-                        "Pr(>X2)", "AIC")
-table_fit[1, ] <- c("Overall Model", round(fitmeasures(t.fit, 
-                                                       c("chisq", "df", "cfi",
-                                                         "rmsea", "srmr")),3),
-                    NA, NA, round((a[1,2])))
-
-table_fit[2, ] <- c("Micronarratives ~0*institution_trust_5", round(fitmeasures(t.fit1, 
-                                                            c("chisq", "df", "cfi",
-                                                              "rmsea", "srmr")),3),
-                    round((t1[2,5]),3), round((t1[2,7]),3), round((t1[2,2])))
-table_fit[3, ] <- c("Mainstream ~0*institution_trust_5", round(fitmeasures(t.fit3, 
-                                                            c("chisq", "df", "cfi",
-                                                              "rmsea", "srmr")),3),
-                    round((t3[2,5]),3), round((t3[2,7]),3),round((t3[2,2])))
-table_fit[4, ] <- c("institution_trust_5~ 0*gr_2 ", round(fitmeasures(t.fit4, 
-                                                                 c("chisq", "df", "cfi",
-                                                                   "rmsea", "srmr", "")),3), 
-                    round((t4[2,5]),3), round((t4[2,7]),3), round((t4[2,2])))
-table_fit[5, ] <- c("institution_trust_5 ~ 0*needsecurity", round(fitmeasures(t.fit5, 
-                                                                 c("chisq", "df", "cfi",
-                                                                   "rmsea", "srmr", "")),3), 
-                    round((t5[2,5]),3), round((t5[2,7]),3), round((t5[2,2])))
-
-kable(table_fit)
-
-
-
-
-
-
-
 
 
 
@@ -1255,136 +888,6 @@ tidySEM::graph_sem(model = a.fit, layout = pfad_layout)
 
 
 
-a1.model <- '
-             needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3
-  Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
-  Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
-  traitneedsecurity=~ security_1+security_2+security_3
-
-  
-  Micronarratives ~needsecurity+traitneedsecurity+institution_trust_5+active_soc_media
-  Mainstream ~needsecurity+traitneedsecurity+institution_trust_5+active_soc_media
-  active_soc_media ~ 0*needsecurity
-
-  needsecurity ~ gr_2
-  institution_trust_5~ gr_2 
-  institution_trust_5 ~ needsecurity
-
-  
-'
-a1.fit <- sem(a1.model, data = forsem, estimator = "MLR", missing = "FIML",
-              group.equal = c("loadings", "intercepts", "means", "residuals", "residual.covariances", "lv.variances", "lv.covariances"))
-summary(a1.fit, fit.measures=T, standardized = T)
-
-
-anova(a.fit, a1.fit)
-
-#        Df   AIC   BIC  Chisq Chisq diff Df diff Pr(>Chisq)
-#a.fit  109 19443 19668 210.46                              
-#a1.fit 110 19442 19664 211.66     1.3156       1     0.2514
-
-
-
-
-a2.model <- '
-            needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3
-  Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
-  Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
-  traitneedsecurity=~ security_1+security_2+security_3
-
-  
-  Micronarratives ~needsecurity+traitneedsecurity+institution_trust_5+active_soc_media
-  Mainstream ~needsecurity+traitneedsecurity+institution_trust_5+0*active_soc_media
-  active_soc_media ~ needsecurity
-
-  needsecurity ~ gr_2
-  institution_trust_5~ gr_2 
-  institution_trust_5 ~ needsecurity
-
- 
-'
-a2.fit <- sem(a2.model, data = forsem, estimator = "MLR", missing = "FIML",
-              group.equal = c("loadings", "intercepts", "means", "residuals", "residual.covariances", "lv.variances", "lv.covariances"))
-summary(a2.fit, fit.measures=T, standardized = T)
-
-
-anova(a.fit, a2.fit)
-
-
-#Df   AIC   BIC  Chisq Chisq diff Df diff Pr(>Chisq)
-#a.fit  109 19443 19668 210.46                              
-#a2.fit 110 19441 19663 210.67    0.17465       1      0.676
-
-
-
-a3.model <- '
-  needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3
-  Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
-  Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
-  traitneedsecurity=~ security_1+security_2+security_3
-
-  
-  Micronarratives ~needsecurity+traitneedsecurity+institution_trust_5+0*active_soc_media
-  Mainstream ~needsecurity+traitneedsecurity+institution_trust_5+active_soc_media
-  active_soc_media ~ needsecurity
-
-  needsecurity ~ gr_2
-  institution_trust_5~ gr_2 
-  institution_trust_5 ~ needsecurity
-'
-a3.fit <- sem(a3.model, data = forsem, estimator = "MLR", missing = "FIML",
-              group.equal = c("loadings", "intercepts", "means", "residuals", "residual.covariances", "lv.variances", "lv.covariances"))
-summary(a3.fit, fit.measures=T, standardized = T)
-
-
-anova(a.fit, a3.fit)
-
-#         Df   AIC   BIC  Chisq Chisq diff Df diff Pr(>Chisq)
-#a.fit  109 19443 19668 210.46                              
-#a3.fit 110 19441 19663 210.47   0.013565       1     0.9073
-
-
-
-#passive media use
-
-p.model <- '
-     security =~ security_freedom_1+security_freedom_2+security_freedom_3
-  Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
-  Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
-  traitsecurity=~ security_1+security_2+security_3
-
-  Micronarratives ~security+traitsecurity+passive_soc_media
-  Mainstream ~security+traitsecurity+passive_soc_media
-  passive_soc_media ~ security
-    passive_soc_media ~ traitsecurity
-
-
-
-
-  security ~ gr_2
-  security ~ institution_trust_5
-  gr_2 ~ institution_trust_5
-'
-p.fit <- sem(p.model, data = forsem, estimator = "MLR", missing = "FIML",
-             group.equal = c("loadings", "intercepts", "means", "residuals", "residual.covariances", "lv.variances", "lv.covariances"))
-summary(p.fit, fit.measures=T, standardized = T)
-
-
-
-
-
-pfad_layout<- get_layout("","traitsecurity", "", "","Micronarratives",
-                         "","", "","","",
-                         "gr_2","passive_soc_media","","","",
-                         "","","","","Mainstream",
-                         "trust5","security","","","",
-                         rows = 5)
-
-tidySEM::graph_sem(model = a.fit, layout = pfad_layout) 
-
-
-
-
 #further analyses
 
 cor(aa$antim_narr_intr, aa$antim_narrat_endors_avg, use = "pairwise.complete.obs")
@@ -1412,9 +915,9 @@ cor(aa$main_narrat_endors_avg, aa$main_endorsement_soc_media, use = "pairwise.co
 cor(aa$antim_endorsement_soc_media, aa$main_endorsement_soc_media, use = "pairwise.complete.obs")
 # 0.05329129
 
-
-
-
+bb<- aov(institution_trust_5~mainstreamlikes+mainstreamdislikes+microdislikes+microlikes, data=mand)
+summary(bb)
+vif(bb)
 
 
 
@@ -1453,11 +956,24 @@ View(estimates_amed.fit)
 
 
 
+a <- lm(micronarratives~ssec*active_soc_media, data=forsem)
+summary(a)
+
+a <- lm(micronarratives_ag~ssec*active_soc_media, data=forsem)
+summary(a)
+
+a <- lm(mainstream~ssec*active_soc_media, data=forsem)
+summary(a)
+
+a <- lm(mainstream_ag~ssec*active_soc_media, data=forsem)
+summary(a)
 
 
 
 
-
+#trust
+t <- aov(ssec~institution_trust_5, data=mand )
+summary(t)
 
 
 

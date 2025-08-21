@@ -12,9 +12,14 @@
 #financial security in comparison to those in the voluntary and control conditions. 
 
 #3 group
-groupcom <- aov(ssec ~ gr+tsec, data=mand)
+groupcom <- aov(ssec ~ gr+tsec, data=onlymanipulation)
 summary(groupcom)
-TukeyHSD(groupcom)
+
+ggplot(groupcom, aes(gr, ssec)) + 
+  geom_boxplot() +
+  labs(x="Group (1= mandatory, 2 = voluntary)", y="(S) Need for security")+
+  scale_fill_brewer(palette = "Pastel1")
+
 
 #only manipulation
 groupcom_man <- aov(ssec ~ gr+tsec, data=onlymanipulation)
@@ -34,6 +39,10 @@ groupcom_manfree <- aov(sfree ~ gr+tfree, data=onlymanipulation)
 summary(groupcom_manfree)
 TukeyHSD(groupcom_manfree)
 
+ggplot(groupcom_manfree, aes(gr, sfree)) + 
+  geom_boxplot() +
+  labs(x="Group (1= mandatory, 2 = voluntary)", y="(S) Need for freedom")+
+  scale_fill_brewer(palette = "Pastel1")
 
 
 mand$gr <- ordered(mand$gr, levels = c("1", "2", "3"))
@@ -601,16 +610,26 @@ cor(aa$antim_endorsement_soc_media, aa$main_endorsement_soc_media, use = "pairwi
 # testing with social media variables
 
 microlikes <- subset(forsem[,c("q1_sm_2","q2_sm_2","q3_sm_2","q4_sm_2")])
+microlikes1 <- subset(mand[,c("q1_sm_2","q2_sm_2","q3_sm_2","q4_sm_2")])
+
 forsem$microlikes <- apply(microlikes, 1, sum, na.rm=T)
+mand$microlikes <- apply(microlikes1, 1, sum, na.rm=T)
 
 mainstreamlikes <- subset(forsem[,c("q5_sm_2","q6_sm_2","q7_sm_2","q8_sm_2")])
+mainstreamlikes1 <- subset(mand[,c("q5_sm_2","q6_sm_2","q7_sm_2","q8_sm_2")])
+
 forsem$mainstreamlikes <- apply(mainstreamlikes, 1, sum, na.rm=T)
+mand$mainstreamlikes <- apply(mainstreamlikes1, 1, sum, na.rm=T)
 
 microdislikes <- subset(forsem[,c("q1_sm_6","q2_sm_6","q3_sm_6","q4_sm_6")])
 forsem$microdislikes <- apply(microdislikes, 1, sum, na.rm=T)
+microdislikes1 <- subset(mand[,c("q1_sm_6","q2_sm_6","q3_sm_6","q4_sm_6")])
+mand$microdislikes <- apply(microdislikes1, 1, sum, na.rm=T)
 
 mainstreamdislikes <- subset(forsem[,c("q5_sm_6","q6_sm_6","q7_sm_6","q8_sm_6")])
 forsem$mainstreamdislikes <- apply(mainstreamdislikes, 1, sum, na.rm=T)
+mainstreamdislikes1 <- subset(mand[,c("q5_sm_6","q6_sm_6","q7_sm_6","q8_sm_6")])
+mand$mainstreamdislikes <- apply(mainstreamdislikes1, 1, sum, na.rm=T)
 
 microshares <- subset(forsem[,c("q1_sm_3","q2_sm_3","q3_sm_3","q4_sm_3")])
 forsem$microshares <- apply(microshares, 1, sum, na.rm=T)
