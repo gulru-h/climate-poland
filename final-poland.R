@@ -75,65 +75,6 @@ clean$finan[clean$finan == "1888"]<- NA
 mand <- clean
 
 ##narratives####
-#perform EFA
-narr <- subset(mand[,c(70,72,74,76,78,80,82,84)])
-library(RcmdrMisc)
-narr <- na.omit(narr)
-rcorr.adjust(narr) # This function is build into R Commander.
-
-## If you want to run this before eliminating missing values use: 
-rcorr.adjust(narr, use="pairwise.complete.obs") 
-
-write.csv(cor(narr)>0.8, file="Suspect_Correlations.csv")
-write.csv(cor(narr), file="Correlation_Values.csv")
-
-library(psych)
-
-KMO(narr)
-cortest.bartlett(narr)
-
-ev <- eigen(cor(narr, use="pairwise.complete.obs")) # get eigenvalues
-ev$values
-
-scree(narr, pc=FALSE)
-fa.parallel(narr, fa="fa")
-
-Nfacs <- 2  
-
-fit <- factanal(narr, Nfacs, rotation="promax", na.omit(narr))
-
-print(fit, digits=2, cutoff=0.3, sort=TRUE)
-
-load <- fit$loadings[,1:2]
-plot(load,type="n") # set up plot
-text(load,labels=names(narr),cex=.7)
-
-
-#cfa for narratives
-# interest
-narint.model <- '
-  Mainstream=~Nar_5correct  +nar_6correct  +nar_7correct  +nar_8correct  
-  Micronarratives=~nar_1+nar_2+nar_3+ nar_4 
-  Mainstream~~Micronarratives
-
-'
-
-narint.fit <- cfa(narint.model, data = forsem, estimator = "ML", missing = "FIML")
-summary(narint.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci=T)
-
-
-#agreement
-narag.model <- '
-  Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
-  Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
-
-  Mainstream~~Micronarratives
-    
-'
-
-narag.fit <- cfa(narag.model, data = forsem, estimator = "ML", missing = "FIML")
-summary(narag.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci=T)
-
 
 #subsetting and building means 
 
@@ -482,6 +423,31 @@ which(is.na(mand$gr))
 forsem <- forsem[-c(123:125, 187, 188, 262,263), ]
 mand <- mand[-c(191, 192, 193 ,284 ,285, 400 ,401), ] 
 
+
+#cfa for narratives
+# interest
+narint.model <- '
+  Mainstream=~Nar_5correct  +nar_6correct  +nar_7correct  +nar_8correct  
+  Micronarratives=~nar_1+nar_2+nar_3+ nar_4 
+  Mainstream~~Micronarratives
+
+'
+
+narint.fit <- cfa(narint.model, data = forsem, estimator = "ML", missing = "FIML")
+summary(narint.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci=T)
+
+
+#agreement
+narag.model <- '
+  Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
+  Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
+
+  Mainstream~~Micronarratives
+    
+'
+
+narag.fit <- cfa(narag.model, data = forsem, estimator = "ML", missing = "FIML")
+summary(narag.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci=T)
 
 #base model interest
 set.seed(545)
