@@ -35,11 +35,12 @@ class(clean$effectiveness_exp)
 clean$effectiveness_exp <- as.numeric(clean$effectiveness_exp)
 man_eff <- subset(clean[,c(61,66)])
 clean$man_eff <- apply(sub, 1, sum, na.rm=T)
-
+mean(clean$man_eff, na.rm=T)
 
 #acceptability
 man_acc <- subset(clean[,c(63,68)])
 clean$man_acc <- apply(sub, 1, sum, na.rm=T)
+mean(clean$man_acc, na.rm=T)
 
 
 ####build means####
@@ -60,11 +61,12 @@ tfree <- subset(clean[,c(37:39)])
 clean$tfree <- apply(tfree, 1, mean, na.rm=T)
 alpha(tfree)
 
-ssec <- subset(clean[,c(52:54)])
+ssec <- subset(clean[,c(52:55)])
 clean$ssec <- apply(ssec, 1, mean, na.rm=T)
 alpha(ssec)
+class(clean$security_freedom_4)
 
-sfree <- subset(clean[,c(55:58)])
+sfree <- subset(clean[,c(56:58)])
 clean$sfree <- apply(sfree, 1, mean, na.rm=T)
 alpha(sfree)
 
@@ -280,14 +282,12 @@ mand$gr <- as.factor(mand$gr)
 library(knitr)
 a <- aov(ssec ~ gr+tsec+finan, data=mand)
 summary(a)
-
-
 eta_squared(a)
 
 aa <- aov(ssec ~ gr, data=mand)
 summary(aa)
 TukeyHSD(aa)
-aatab <- apa.aov.table(aa, "aa.doc") 
+aatab <- apa.aov.table(aa) 
 
 
 #only manipulation
@@ -303,11 +303,11 @@ TukeyHSD(bb)
 c <- aov(sfree ~ gr+tfree+finan, data=mand)
 summary(c)
 eta_squared(c)
-ctab <- apa.aov.table(c, "c.doc") 
+ctab <- apa.aov.table(c) 
 
 cc <- aov(sfree ~ gr, data=mand)
 TukeyHSD(cc)
-cctab <- apa.aov.table(cc, "cc.doc") 
+cctab <- apa.aov.table(cc) 
 
 #only manipulation
 d <- aov(sfree ~ gr, data=onlymanipulation)
@@ -346,9 +346,8 @@ tab_model(m1.a,
           show.std = TRUE,     
           show.se = TRUE,       
           show.fstat = TRUE,
-          digits = 3,           
+          digits = 2,           
           p.style = "numeric")
-?tab_model
 
 m2 <- lm(mainstream~ ssec*active_soc_media+tsec, data=onlymanipulation)
 m2.a <- summary(m2)
@@ -358,7 +357,7 @@ tab_model(m2.a,
           show.std = TRUE,     
           show.se = TRUE,       
           show.fstat = TRUE,    
-          digits = 3,           
+          digits = 2,           
           p.style = "numeric")
 
 m3 <- lm(mainstream_ag~ ssec*active_soc_media+tsec, data=onlymanipulation)
@@ -369,7 +368,7 @@ tab_model(m3.a,
           show.std = TRUE,     
           show.se = TRUE,       
           show.fstat = TRUE,    
-          digits = 3,           
+          digits = 2,           
           p.style = "numeric")
 
 m4 <- lm(micronarratives_ag~ ssec*active_soc_media+tsec, data=onlymanipulation)
@@ -392,7 +391,7 @@ tab_model(m5.a,
           show.std = TRUE,     
           show.se = TRUE,       
           show.fstat = TRUE,    
-          digits = 3,           
+          digits = 2,           
           p.style = "numeric")
 
 m6 <- lm(mainstream~ sfree*active_soc_media+tfree, data=onlymanipulation)
@@ -403,7 +402,7 @@ tab_model(m6.a,
           show.std = TRUE,     
           show.se = TRUE,       
           show.fstat = TRUE,    
-          digits = 3,           
+          digits = 2,           
           p.style = "numeric")
 
 m7 <- lm(mainstream_ag~ sfree*active_soc_media+tfree, data=onlymanipulation)
@@ -414,7 +413,7 @@ tab_model(m7.a,
           show.std = TRUE,     
           show.se = TRUE,       
           show.fstat = TRUE,    
-          digits = 3,           
+          digits = 2,           
           p.style = "numeric")
 
 m8 <- lm(micronarratives_ag~ sfree*active_soc_media+tfree, data=onlymanipulation)
@@ -426,7 +425,7 @@ tab_model(m8.a,
           show.std = TRUE,     
           show.se = TRUE,       
           show.fstat = TRUE,    
-          digits = 3,           
+          digits = 2,           
           p.style = "numeric")
 
 
@@ -556,7 +555,7 @@ write.xlsx(nagdatabases, file = "nagfit.xlsx", colNames = T, rowNames = T)
 #Interest security base
 
 medint.model <- '
-  needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3
+  needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3+security_freedom_4
   Mainstream=~Nar_5correct  +nar_6correct  +nar_7correct  +nar_8correct  
   Micronarratives=~nar_1+nar_2+nar_3+ nar_4 
   traitneedsecurity=~ security_1+security_2+security_3
@@ -602,7 +601,7 @@ write.xlsx(medintdatabases, file = "medintfit.xlsx", colNames = T, rowNames = T)
 #Security - agreement base
 
 med.model <- '
-  needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3
+  needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3+security_freedom_4
   Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
   Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
   traitneedsecurity=~ security_1+security_2+security_3  
@@ -644,7 +643,7 @@ write.xlsx(medfitdatabases, file = "medfit.xlsx", colNames = T, rowNames = T)
 #security, interest, trust
 
 int_talt.model <- '
-  needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3
+  needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3+security_freedom_4
   intMainstream=~Nar_5correct  +nar_6correct  +nar_7correct  +nar_8correct  
   intMicronarratives=~nar_1+nar_2+nar_3+ nar_4 
   traitneedsecurity=~ security_1+security_2+security_3
@@ -691,7 +690,7 @@ write.xlsx(int_taltfitdatabases, file = "int_taltfit.xlsx", colNames = T, rowNam
 #Trust - agreement security
 
 talt.model <- '
-  needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3
+  needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3+security_freedom_4
   Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
   Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
   traitneedsecurity=~ security_1+security_2+security_3
@@ -748,7 +747,7 @@ dmcforsem <- indProd(dmcforsem, var1= c("security_freedom_1", "security_freedom_
 
 
 amedint.model <- '
-  stateneedsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3
+  stateneedsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3+security_freedom_4
   Mainstream=~Nar_5correct  +nar_6correct  +nar_7correct  +nar_8correct  
   Micronarratives=~nar_1+nar_2+nar_3+ nar_4 
   traitneedsecurity=~ security_1+security_2+security_3
@@ -794,7 +793,7 @@ dmcforsem <- indProd(dmcforsem, var1= c("security_freedom_1", "security_freedom_
                      match = FALSE , meanC = TRUE ,
                      residualC = FALSE , doubleMC = TRUE) 
 amed.model <- '
-stateneedsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3
+stateneedsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3+security_freedom_4
   Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
   Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
   traitneedsecurity=~ security_1+security_2+security_3
@@ -834,7 +833,7 @@ write.xlsx(amedfitdatabases, file = "amedfit.xlsx", colNames = T, rowNames = T)
 #freedom approach base
 
 frintmed.model <- '
-  needfreedom =~ security_freedom_4+security_freedom_5+security_freedom_6
+  needfreedom =~ security_freedom_5+security_freedom_6+security_freedom_7
   Mainstream=~Nar_5correct  +nar_6correct  +nar_7correct  +nar_8correct  
   Micronarratives=~nar_1+nar_2+nar_3+ nar_4 
   traitneedfreedom=~ security_4+security_5+security_6
@@ -877,7 +876,7 @@ write.xlsx(frintmedfitdatabases, file = "frintmedfit.xlsx", colNames = T, rowNam
 
 
 frmed.model <- '
-  needfreedom =~ security_freedom_4+security_freedom_5+security_freedom_6
+  needfreedom =~ security_freedom_5+security_freedom_6+security_freedom_7
   Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
   Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
   traitneedfreedom=~ security_4+security_5+security_6
@@ -919,7 +918,7 @@ write.xlsx(frmedfitdatabases, file = "frmedfit.xlsx", colNames = T, rowNames = T
 #freedom approach trust
 
 frtaltint.model <- '
-  needfreedom =~ security_freedom_4+security_freedom_5+security_freedom_6
+  needfreedom =~ security_freedom_5+security_freedom_6+security_freedom_7
   Mainstream=~Nar_5correct  +nar_6correct  +nar_7correct  +nar_8correct  
   Micronarratives=~nar_1+nar_2+nar_3+ nar_4 
   traitneedfreedom=~ security_4+security_5+security_6
@@ -968,7 +967,7 @@ write.xlsx(frtaltintfitdatabases, file = "frtaltintfit.xlsx", colNames = T, rowN
 
 
 frtalt.model <- '
-  needfreedom =~ security_freedom_4+security_freedom_5+security_freedom_6
+  needfreedom =~ security_freedom_5+security_freedom_6+security_freedom_7
   Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
   Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
   traitneedfreedom=~ security_4+security_5+security_6
@@ -1020,7 +1019,7 @@ dmcforsem <- indProd(dmcforsem, var1= c("security_freedom_4", "security_freedom_
                      match = FALSE , meanC = TRUE ,
                      residualC = FALSE , doubleMC = TRUE) 
 frintamed.model <- '
-  stateneedfreedom =~ security_freedom_4+security_freedom_5+security_freedom_6
+  stateneedfreedom =~ security_freedom_5+security_freedom_6+security_freedom_7
   Mainstream=~Nar_5correct  +nar_6correct  +nar_7correct  +nar_8correct  
   Micronarratives=~nar_1+nar_2+nar_3+ nar_4 
   traitneedfreedom=~ security_4+security_5+security_6
@@ -1066,7 +1065,7 @@ dmcforsem <- indProd(dmcforsem, var1= c("security_freedom_4", "security_freedom_
                      match = FALSE , meanC = TRUE ,
                      residualC = FALSE , doubleMC = TRUE) 
 fragamed.model <- '
-  stateneedfreedom =~ security_freedom_4+security_freedom_5+security_freedom_6
+  stateneedfreedom =~ security_freedom_5+security_freedom_6+security_freedom_7
   Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
   Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
   traitneedfreedom=~ security_4+security_5+security_6
@@ -1109,7 +1108,7 @@ write.xlsx(fragamedfitdatabases, file = "fragamedfit.xlsx", colNames = T, rowNam
 #Number of Likes and Dislikes, need for security, active media use
 
 ldla.model <- '
-  needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3
+  needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3+security_freedom_4
   likeMainstream=~mainstreamlikes           #q5_sm_2 +q6_sm_2+q7_sm_2 +q8_sm_2 
   likeMicronarratives=~microlikes            #q1_sm_2 +q2_sm_2+q3_sm_2+q4_sm_2 
   dislikeMainstream=~mainstreamdislikes     #q5_sm_6 +q6_sm_6+q7_sm_6#+q8_sm_6 
@@ -1186,7 +1185,7 @@ write.xlsx(ldlafitdatabases, file = "ldlafit.xlsx", colNames = T, rowNames = T)
 
 #both
 fldl.model <- '
-  needfreedom =~ security_freedom_4+security_freedom_5+security_freedom_6
+  needfreedom =~ security_freedom_5+security_freedom_6+security_freedom_7
   likeMainstream=~mainstreamlikes           #q5_sm_2 +q6_sm_2+q7_sm_2 +q8_sm_2 
   likeMicronarratives=~microlikes            #q1_sm_2 +q2_sm_2+q3_sm_2+q4_sm_2 
   dislikeMainstream=~mainstreamdislikes     #q5_sm_6 +q6_sm_6+q7_sm_6#+q8_sm_6 
