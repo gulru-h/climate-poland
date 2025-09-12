@@ -255,6 +255,33 @@ d <- aov(sfree ~ gr, data=onlymanipulation)
 summary(d)
 TukeyHSD(d)
 
+#approach
+
+microint<- lm(micronarratives~gr, data=onlymanipulation)
+summary(microint)
+standardise(microint)
+
+
+tab_model(microint,
+          show.std = TRUE,     
+          show.se = TRUE,       
+          show.fstat = TRUE,    
+          digits = 2,           
+          p.style = "numeric")
+
+
+microag<- lm(micronarratives_ag~gr, data=onlymanipulation)
+summary(microag)
+standardise(microag)
+
+
+tab_model(microag,
+          show.std = TRUE,     
+          show.se = TRUE,       
+          show.fstat = TRUE,    
+          digits = 2,           
+          p.style = "numeric")
+
 
 #trust
 trustsec <- lm(institution_trust_5 ~ ssec, data= onlymanipulation)
@@ -370,7 +397,7 @@ tab_model(m8.a,
           p.style = "numeric")
 
 
-#H5: The perceived effectiveness of the proposed policy will not differ between 
+#H1.1: The perceived effectiveness of the proposed policy will not differ between 
 #the mandatory and the voluntary conditions.
 eff <- aov(man_eff~gr, data=onlymanipulation)
 summary(eff)
@@ -379,7 +406,7 @@ TukeyHSD(eff)
 #mandatory policy seen as more effective
 
 
-#H6: Participants in the mandatory condition will perceive the policy to be less 
+#H1.2: Participants in the mandatory condition will perceive the policy to be less 
 #acceptable in comparison to those in the voluntary and control conditions.
 acc <- aov(man_acc~gr, data=onlymanipulation)
 summary(acc)
@@ -449,168 +476,30 @@ narag.model <- '
 narag.fit <- cfa(narag.model, data = forsem, estimator = "ML", missing = "FIML")
 summary(narag.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci=T)
 
-#base model interest
-set.seed(545)
-nint.model <- '
-  Mainstream=~Nar_5correct  +nar_6correct  +nar_7correct  +nar_8correct  
-  Micronarratives=~nar_1+nar_2+nar_3+ nar_4 
-  Micronarratives ~ gr_1
-  Mainstream ~gr_1
-  Mainstream~~Micronarratives
-
-'
-
-nint.fit <- sem(nint.model, data = forsem, estimator = "ML", missing = "FIML")
-summary(nint.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci=T)
-
-
-nintestimates <- parameterestimates(nint.fit)
-standardisednint <- standardizedSolution(nint.fit)
-nintcovariancematrix <- data.frame(fitted(nint.fit))
-nintresiduals <- data.frame(resid(nint.fit))
-fitnint <- data.frame(fitMeasures(nint.fit))
-
-library(openxlsx)
-nintdatabases <- list("parameter estimates" = nintestimates, 
-                      "standardised pe" = standardisednint,
-                      "covariance matrix" = nintcovariancematrix,
-                      "residuals" = nintresiduals,
-                      "fit estimates" = fitnint)
-
-write.xlsx(nintdatabases, file = "nintfit.xlsx", colNames = T, rowNames = T)
-
-
-
-#base model agreement
 
 set.seed(545)
+#INTEREST
+#security, interest, trust
 
-nag.model <- '
-  Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
-  Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
-
-  Micronarratives ~ gr_1
-  Mainstream ~gr_1
-  
-  Mainstream~~Micronarratives
-    
-'
-
-nag.fit <- sem(nag.model, data = forsem, estimator = "ML", missing = "FIML")
-summary(nag.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci=T)
-
-
-nagestimates <- parameterestimates(nag.fit)
-standardisednag <- standardizedSolution(nag.fit)
-nagcovariancematrix <- data.frame(fitted(nag.fit))
-nagresiduals <- data.frame(resid(nag.fit))
-fitnag <- data.frame(fitMeasures(nag.fit))
-
-library(openxlsx)
-nagdatabases <- list("parameter estimates" = nagestimates, 
-                      "standardised pe" = standardisednag,
-                      "covariance matrix" = nagcovariancematrix,
-                      "residuals" = nagresiduals,
-                      "fit estimates" = fitnag)
-
-write.xlsx(nagdatabases, file = "nagfit.xlsx", colNames = T, rowNames = T)
-
-
-#SECURITY
-
-#Interest security base
-
-medint.model <- '
+#measurement model
+mint_talt.model <- '
   needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3+security_freedom_4
-  Mainstream=~Nar_5correct  +nar_6correct  +nar_7correct  +nar_8correct  
-  Micronarratives=~nar_1+nar_2+nar_3+ nar_4 
+  intMainstream=~Nar_5correct  +nar_6correct  +nar_7correct  +nar_8correct  
+  intMicronarratives=~nar_1+nar_2+nar_3+ nar_4 
   traitneedsecurity=~ security_1+security_2+security_3
   finance=~financial_sit_1+financial_sit_2+financial_sit_3
-  
-  Micronarratives ~b1*needsecurity+gr_1+traitneedsecurity+finance
-  Mainstream ~b2*needsecurity+gr_1+traitneedsecurity+finance
-  needsecurity ~ a1*gr_1+traitneedsecurity+finance
-  Mainstream~~Micronarratives
-  
-  ind1 := a1*b1
-  ind2 := a1*b2
- 
-'
-
-
-medint.fit <- sem(medint.model, data = forsem, estimator = "ML"
-                  #,
-                  #missing = "FIML",se = "bootstrap",bootstrap = 5000L, 
-                  #parallel ="multicore", verbose= T
-                  )
-summary(medint.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci = T)
-
-
-medintestimates <- parameterestimates(medint.fit)
-standardisedmedint <- standardizedSolution(medint.fit)
-medintcovariancematrix <- data.frame(fitted(medint.fit))
-medintresiduals <- data.frame(resid(medint.fit))
-fitmedint <- data.frame(fitMeasures(medint.fit))
-
-library(openxlsx)
-medintdatabases <- list("parameter estimates" = medintestimates, 
-                     "standardised pe" = standardisedmedint,
-                     "covariance matrix" = medintcovariancematrix,
-                     "residuals" = medintresiduals,
-                     "fit estimates" = fitmedint)
-
-write.xlsx(medintdatabases, file = "medintfit.xlsx", colNames = T, rowNames = T)
-
-
-
-
-
-
-#Security - agreement base
-
-med.model <- '
-  needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3+security_freedom_4
-  Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
-  Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
-  traitneedsecurity=~ security_1+security_2+security_3  
-  finance=~financial_sit_1+financial_sit_2+financial_sit_3
-
-
-  Micronarratives ~b1*needsecurity+gr_1+traitneedsecurity+finance
-  Mainstream ~b2*needsecurity+gr_1+traitneedsecurity+finance
-  needsecurity ~ a1*gr_1+traitneedsecurity+finance
-
-  Mainstream~~Micronarratives
-    
-  ind1 := a1*b1
-  ind2 := a1*b2
+  trust =~1*institution_trust_5
 
 '
 
-med.fit <- sem(med.model, data = forsem, estimator = "ML"
-               #, 
-               #missing = "FIML", se = "bootstrap",bootstrap = 5000L, 
-               #parallel ="multicore", verbose= T
-               )
-summary(med.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci= T)
-
-medfitestimates <- parameterestimates(med.fit)
-standardisedmedfit <- standardizedSolution(med.fit)
-medfitcovariancematrix <- data.frame(fitted(med.fit))
-medfitresiduals <- data.frame(resid(med.fit))
-fitmedfit <- data.frame(fitMeasures(med.fit))
-library(openxlsx)
-medfitdatabases <- list("parameter estimates" = medfitestimates, 
-                        "standardised pe" = standardisedmedfit,
-                        "covariance matrix" = medfitcovariancematrix,
-                        "residuals" = medfitresiduals,
-                        "fit estimates" = fitmedfit)
-
-write.xlsx(medfitdatabases, file = "medfit.xlsx", colNames = T, rowNames = T)
+mint_talt.fit <- sem(mint_talt.model, data = forsem, estimator = "ML", 
+                    missing = "FIML"
+                  #  , se = "bootstrap",bootstrap = 5000L, 
+                  # parallel ="multicore", verbose= T
+                    )
+summary(mint_talt.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci = T)
 
 
-
-#security, interest, trust
 
 int_talt.model <- '
   needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3+security_freedom_4
@@ -618,13 +507,14 @@ int_talt.model <- '
   intMicronarratives=~nar_1+nar_2+nar_3+ nar_4 
   traitneedsecurity=~ security_1+security_2+security_3
   finance=~financial_sit_1+financial_sit_2+financial_sit_3
+  trust =~1*institution_trust_5
 
 
-  institution_trust_5 ~ traitneedsecurity+b1*intMicronarratives + b2*intMainstream +gr_1 +needsecurity+finance
+  trust ~ traitneedsecurity+b1*intMicronarratives + b2*intMainstream +gr_1 +needsecurity+finance
   intMicronarratives ~a1*needsecurity+gr_1+traitneedsecurity+finance
   intMainstream ~ a2*needsecurity+gr_1+traitneedsecurity+finance
   needsecurity ~ a3*gr_1+traitneedsecurity+finance
-
+  
   ind1 := a1*b1
   ind2 := a2*b2
   ind3 := a3*a1
@@ -632,13 +522,15 @@ int_talt.model <- '
   
   intMicronarratives~~intMainstream
 
-
 '
 
 int_talt.fit <- sem(int_talt.model, data = forsem, estimator = "ML", 
-                    missing = "FIML", se = "bootstrap",bootstrap = 5000L, 
-                    parallel ="multicore", verbose= T)
+                    missing = "FIML"
+                   # , se = "bootstrap",bootstrap = 5000L, 
+                  #  parallel ="multicore", verbose= T
+                    )
 summary(int_talt.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci = T)
+
 
 
 int_taltfitestimates <- parameterestimates(int_talt.fit)
@@ -656,36 +548,55 @@ int_taltfitdatabases <- list("parameter estimates" = int_taltfitestimates,
 write.xlsx(int_taltfitdatabases, file = "int_taltfit.xlsx", colNames = T, rowNames = T)
 
 
+#AGREEMENT
+#Measurement model
 
-#Trust - agreement security
+mtalt.model <- '
+  needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3+security_freedom_4
+  Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
+  Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
+  traitneedsecurity=~ security_1+security_2+security_3
+  finance=~financial_sit_1+financial_sit_2+financial_sit_3
+  trust =~1*institution_trust_5
 
+'
+
+mtalt.fit <- sem(mtalt.model, data = forsem, estimator = "ML", 
+                missing = "FIML"
+                #, se = "bootstrap",bootstrap = 5000L, 
+               # parallel ="multicore", verbose= T
+               )
+summary(mtalt.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci= T)
+
+#structural model
 talt.model <- '
   needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3+security_freedom_4
   Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
   Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
   traitneedsecurity=~ security_1+security_2+security_3
   finance=~financial_sit_1+financial_sit_2+financial_sit_3
- 
-
+  
   institution_trust_5 ~ b1*Micronarratives + b2*Mainstream +gr_1 +needsecurity+traitneedsecurity+finance
   Micronarratives ~a1*needsecurity+gr_1+traitneedsecurity+finance
   Mainstream ~ a2*needsecurity+gr_1+traitneedsecurity+finance
   needsecurity ~ a3*gr_1+traitneedsecurity+finance
-
+  
   ind1 := a1*b1
   ind2 := a2*b2
   ind3 := a3*a1
   ind4 := a3*a2
-
-  Micronarratives~~Mainstream
+  
+  Micronarratives~~Mainstream 
 
 '
 
 
 talt.fit <- sem(talt.model, data = forsem, estimator = "ML", 
-                missing = "FIML", se = "bootstrap",bootstrap = 5000L, 
+                missing = "FIML"
+                , se = "bootstrap",bootstrap = 5000L, 
                 parallel ="multicore", verbose= T)
 summary(talt.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci= T)
+
 
 
 taltfitestimates <- parameterestimates(talt.fit)
@@ -800,95 +711,27 @@ write.xlsx(amedfitdatabases, file = "amedfit.xlsx", colNames = T, rowNames = T)
 
 #FREEDOM
 
-#freedom approach base
+#APPROACH
+#measurement model
 
-frintmed.model <- '
+
+mfrtaltint.model <- '
   needfreedom =~ security_freedom_5+security_freedom_6+security_freedom_7
   Mainstream=~Nar_5correct  +nar_6correct  +nar_7correct  +nar_8correct  
   Micronarratives=~nar_1+nar_2+nar_3+ nar_4 
   traitneedfreedom=~ security_4+security_5+security_6
   finance=~financial_sit_1+financial_sit_2+financial_sit_3
 
-  Micronarratives ~b1*needfreedom+gr_1+traitneedfreedom+finance
-  Mainstream ~b2*needfreedom+gr_1+traitneedfreedom+finance
-  needfreedom ~ a1*gr_1+traitneedfreedom+finance
-
-  Mainstream~~Micronarratives
-  
-  ind1 := a1*b1
-  ind2 := a1*b2
-
 '
 
-frintmed.fit <- sem(frintmed.model, data = forsem, estimator = "ML"
-                    #, 
-                    #missing = "FIML", se = "bootstrap",
-                    #bootstrap = 5000L,parallel ="multicore", verbose= T
-                    )
-summary(frintmed.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci=T)
+mfrtaltint.fit <- sem(mfrtaltint.model, data = forsem, estimator = "ML", 
+                     missing = "FIML", se = "bootstrap",
+                     bootstrap = 5000L,parallel ="multicore", verbose= T)
+summary(mfrtaltint.fit, fit.measures=T, standardized = T, rsquare=TRUE,
+        ci=T)
 
 
-
-frintmedfitestimates <- parameterestimates(frintmed.fit)
-standardisedfrintmedfit <- standardizedSolution(frintmed.fit)
-frintmedfitcovariancematrix <- data.frame(fitted(frintmed.fit))
-frintmedfitresiduals <- data.frame(resid(frintmed.fit))
-fitfrintmedfit <- data.frame(fitMeasures(frintmed.fit))
-library(openxlsx)
-frintmedfitdatabases <- list("parameter estimates" = frintmedfitestimates, 
-                         "standardised pe" = standardisedfrintmedfit,
-                         "covariance matrix" = frintmedfitcovariancematrix,
-                         "residuals" = frintmedfitresiduals,
-                         "fit estimates" = fitfrintmedfit)
-
-write.xlsx(frintmedfitdatabases, file = "frintmedfit.xlsx", colNames = T, rowNames = T)
-
-
-#freedom -- agreement base model
-
-
-frmed.model <- '
-  needfreedom =~ security_freedom_5+security_freedom_6+security_freedom_7
-  Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
-  Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
-  traitneedfreedom=~ security_4+security_5+security_6
-  finance=~financial_sit_1+financial_sit_2+financial_sit_3
-
-  Micronarratives ~b1*needfreedom+gr_1+traitneedfreedom+finance
-  Mainstream ~b2*needfreedom+gr_1+traitneedfreedom+finance
-
-  needfreedom ~ a1*gr_1+traitneedfreedom+finance
-
-  Mainstream~~Micronarratives
-
-  ind1 := a1*b1
-  ind2 := a1*b2
-
-'
-
-frmed.fit <- sem(frmed.model, data = forsem, estimator = "ML", 
-                 missing = "FIML", se = "bootstrap",
-                 bootstrap = 5000L,parallel ="multicore", verbose= T)
-summary(frmed.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci=T)
-
-
-frmedfitestimates <- parameterestimates(frmed.fit)
-standardisedfrmedfit <- standardizedSolution(frmed.fit)
-frmedfitcovariancematrix <- data.frame(fitted(frmed.fit))
-frmedfitresiduals <- data.frame(resid(frmed.fit))
-fitfrmedfit <- data.frame(fitMeasures(frmed.fit))
-library(openxlsx)
-frmedfitdatabases <- list("parameter estimates" = frmedfitestimates, 
-                             "standardised pe" = standardisedfrmedfit,
-                             "covariance matrix" = frmedfitcovariancematrix,
-                             "residuals" = frmedfitresiduals,
-                             "fit estimates" = fitfrmedfit)
-
-write.xlsx(frmedfitdatabases, file = "frmedfit.xlsx", colNames = T, rowNames = T)
-
-
-#freedom approach trust
-
+#structural model
 frtaltint.model <- '
   needfreedom =~ security_freedom_5+security_freedom_6+security_freedom_7
   Mainstream=~Nar_5correct  +nar_6correct  +nar_7correct  +nar_8correct  
@@ -933,8 +776,23 @@ frtaltintfitdatabases <- list("parameter estimates" = frtaltintfitestimates,
 
 write.xlsx(frtaltintfitdatabases, file = "frtaltintfit.xlsx", colNames = T, rowNames = T)
 
+#AGREEMENT
+#freedom 
+#measurement model
 
-#freedom agreement trust
+mfrtalt.model <- '
+  needfreedom =~ security_freedom_5+security_freedom_6+security_freedom_7
+  Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
+  Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
+  traitneedfreedom=~ security_4+security_5+security_6
+  finance=~financial_sit_1+financial_sit_2+financial_sit_3
+
+'
+
+mfrtalt.fit <- sem(mfrtalt.model, data = forsem, estimator = "ML", 
+                  missing = "FIML", se = "bootstrap",
+                  bootstrap = 5000L,parallel ="multicore", verbose= T)
+summary(mfrtalt.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci=T)
 
 
 
@@ -1219,7 +1077,11 @@ fldlfitdatabases <- list("parameter estimates" = fldlfitestimates,
 write.xlsx(fldlfitdatabases, file = "fldlfit.xlsx", colNames = T, rowNames = T)
 
 
-vuongtest(medint.fit, frintmed.fit)
+rsquareCalc(frtaltint.fit, "institution_trust_5", "Micronarratives")
+rsquareCalc(frtaltint.fit, "institution_trust_5", "Mainstream")
+
+library(nonnest2)
+vuongtest(int_talt.fit, medint.fit)
 
 
 
@@ -1227,37 +1089,133 @@ vuongtest(medint.fit, frintmed.fit)
 
 
 
-both.model <- '
-  needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3+security_freedom_4
-  needfreedom =~ security_freedom_5+security_freedom_6+security_freedom_7
-  Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
-  Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
-  traitneedsecurity=~ security_1+security_2+security_3  
-  finance=~financial_sit_1+financial_sit_2+financial_sit_3
-  traitneedfreedom=~ security_4+security_5+security_6
-
-  Micronarratives ~b1*needsecurity+gr_1+traitneedsecurity+finance+traitneedfreedom+b3*needfreedom
-  Mainstream ~b2*needsecurity+gr_1+traitneedsecurity+finance+traitneedfreedom+b4*needfreedom
-  needsecurity ~ a1*gr_1+traitneedsecurity+finance
-  needfreedom ~ a2*gr_1+traitneedfreedom+finance
+rsquareCalc <- function (model, y, x, adj = FALSE, effN = FALSE, silent =
+                           FALSE) {
+  #model is a model fit by lavaan using e.g., the sem() or lavaan ()function.
+  #Y is a character vector of length 1 specifying the name of the (single) structural outcome of interest.
+  #x is a vector of one or more character strings specifying the name (s) of the target predictor(s) of interest, to be omitted from the reduced model.
+  #adj: do you want to calculate adjusted rather than unadjusted R2 and R2 change? Defaults to FALSE.
+  #effN: if TRUE, N in the adjusted R-square calculation is set to the lowest effective N in the structural regression. Defaults to FALSE.
+  #silent: if TRUE, output does not automatically print (but is returned as invisible). Defaults to FALSE.
+  #This argument is invoked when using rsquareCalc.Boot in order to turn off default printing while taking bootstrap resamples.
+  require ("lavaan")
+  if(!is.character (y) |length (y) != 1) stop("y must be a character vector
+of length 1, specifying the name of the DV in the (manifest or latent variable) regression of interest!")
+  #parameter estimates
+  pe <- parameterEstimates (model, standardized = TRUE, rsquare = TRUE)
+  #correlation matrix of all variables
+  Rmat <- lavInspect (model, what = "cor.all")
   
-
-  Mainstream~~Micronarratives
-  needsecurity~~needfreedom
-  traitneedsecurity~~traitneedfreedom
-    
-  ind1 := a1*b1
-  ind2 := a1*b2
-  ind3 := a2*b3
-  ind4 := a2*b4
-
-'
-
-both.fit <- sem(both.model, data = forsem, estimator = "ML"
-               #, 
-               #missing = "FIML", se = "bootstrap",bootstrap = 5000L, 
-               #parallel ="multicore", verbose= T
-)
-summary(both.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci= T)
+  #regression coefficients
+  Gamma <- pe[pe$lhs == y & pe$op == "~", ]
+  
+  #names of X variables NOT specified in x 
+  otherXnames <- Gamma [! (Gamma$rhs %in% x), "rhs"]
+  
+  #Grab correlation matrix of other Xs.
+  Rxx <- Rmat[otherXnames, otherXnames, drop = FALSE]
+  
+  #Inverse X cor mat.
+  RxxInv <- solve (Rxx)
+  #vector of xy correlations.
+  Rxy <- Rmat [otherXnames, y, drop = FALSE] 
+  #this way preserves the correct order of the other x names
+  #compute new gammas as they would have been without the variables in x included in the model.
+  #gamma = RxxInv%*Rxy
+  GammaNew <- RxxInv%*%Rxy
+  #R square of the submodel
+  RsqReduced <- t (GammaNew) %*%Rxy
+  #R square from Full model
+  RsqFull <- pe[pe$lhs == y & pe$op == "r2", "est"]
+  if (adj) {
+    #If adjusted R-square is requested
+    #Retrieve number of observations used in the analysis.
+    n <- lavInspect (model, what = "nobs")
+    #Number of predictors in the full model. 
+    pFull <- nrow (pe[pe$lhs == y & pe$op == "~",])
+    #Number of predictors contributing to increment in R-squared.
+    pInc <- length (x)
+    #Reducted model p = pFull - pInc.
+    pRed <- pFull - pInc
+    if (effN) {
+      #If effective N is requested, first check that the fmi is calculable.
+      #To do this, the following code borrows from lavaan'sinternal code.
+      ###Code taken from parameterEstimates () function:
+      PT <- parTable (model)
+      EM.cov <- lavInspect (model, "sampstat.h1")$cov
+      EM.mean <- lavInspect (model, "sampstat.h1")$mean 
+      this.options <- model@Options 
+      this.options$optim.method <- "none"
+      this.options$sample.cov.rescale <- FALSE
+      this.options$check.gradient <- FALSE
+      this.options
+      this.options$baseline <- FALSE
+      this.options$h1 <- FALSE 
+      this.options$test <- FALSE
+      fit.complete <- lavaan (model = PT, sample.cov = EM.cov,
+                              sample.mean = EM.mean, sample.nobs = n, slotOptions = this.options) 
+      ###
+      #Check that the complete model is identified:
+      if (any (eigen (lavInspect (fit.complete, what = "vcov") ) $values
+               <0)) {
+        #If the model used to estimate the fmi is non-identified, everything is NA.
+        res <- rep (NA, 2)
+        names (res)<- c (paste ("Rsquare Without ", paste0 (x,
+                                                            collapse = " "), collapse = ""), "RsquareChange")
+      }else{
+        #Otherwise, the calculations proceed
+        #peFMI = parameter estimates with fmi
+        peFMI <- parameterEstimates (model, standardized = TRUE,
+                                     rsquare = TRUE, fmi = TRUE)
+        #Flag regression relationships with proper dv: 
+        regressionflag <- peFMI$lhs == y & peFMI$op == "~"
+        #Flag the residual variance as well
+        residvarflag <- peFMI$lhs == y & peFMI$op == "~~" &peFMI$rhs == y
+        
+        #Subset the parameter estimates object to include all contributors to predicted and residual variance. 
+        peFMI_sub <- peFMI[regressionflag|residvarflag,]
+        #Retrieve max fmi from structural model.
+        fmi < peFMI_sub[which.max(peFMI_sub$fmi), "fmi"]
+        #Calculate the effective n
+        effN <- n* (1-fmi)
+        #Overwrite the original n for use in subsequent calculations.
+        n <- effN
+        #Adjusted R-square calculations.
+        multiplierFull <- (n-1) /(n - pFull - 1) 
+        multiplierRed <- (n-1) / (n - pRed - 1)
+        RsqReduced <- 1 - multiplierRed* (1 - RsqReduced)
+        RsqFull <- 1 - multiplierFull*(1 - RsqFull)
+        #R square change is difference between overall Rsquare and reduced R square.
+        RsgChange <- RsqFull - RsqReduced
+        res < - c(RsqReduced, RsqChange)
+        names (res) <- c(paste ("Rsquare Without ", paste0 (x,
+                                                            collapse = " "), collapse = ""),
+                         "RsquareChange")
+      }
+    }else{        
+      #If effN == FALSE, we proceed with the overall n.
+      #Adjusted R-square calculations.
+      multiplierFull <- (n-1)/(n - pFull - 1) 
+      multiplierRed <- (n-1) / (n - pRed - 1)
+      RsqReduced <- 1 - multiplierRed* (1 - RsqReduced)
+      RsqFull <- 1 - multiplierFull*(1 - RsqFull)
+      #R square change is difference between overall R square and reduced R square.
+      RsqChange <- RsqFull - RsqReduced
+      res <- c (RsqReduced, RsqChange)
+      names (res) <- c (paste ("Rsquare Without ", paste0 (x,
+                                                           collapse = " "), collapse = ""), "RsquareChange")
+    }
+  }else{
+    #Otherwise, simply calculate R-square change without the adjustment terms.
+    RsqChange <- RsqFull - RsqReduced
+    res <- c (RsqReduced, RsqChange)
+    names (res) <- c (paste("Rsquare Without ", paste0(x, collapse = "
+                "), collapse = ""),"RsquareChange")
+  }
+  #if silent printing is not requested, print the result.
+  if(!silent) print (round(res, 2))
+  #And return the object.
+  invisible (res)
+}                      
 
 
