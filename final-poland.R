@@ -5,6 +5,7 @@ renv::snapshot()
 
 #usethis::use_github()
 usethis::gh_token_help()
+gitcreds::gitcreds_set()
 
 library(careless)
 library(ggplot2)
@@ -275,7 +276,7 @@ tab_model(trustsec,
 
 
 #(exploratory) H4: Active media use will moderate the relationship between 
-#perceived threat to security and the choice of micro and mainstream narratives.
+#perceived threat to security and the choice of micro and mainstream narratives.####
 
 m1 <- lm(micronarratives~ ssec*active_soc_media+tsec, data=onlymanipulation)
 m1.a <- summary(m1)
@@ -368,7 +369,7 @@ tab_model(m8.a,
           show.fstat = TRUE,    
           digits = 2,           
           p.style = "numeric")
-
+#####
 
 #H5: The perceived effectiveness of the proposed policy will not differ between 
 #the mandatory and the voluntary conditions.
@@ -436,7 +437,7 @@ narint.model <- '
 narint.fit <- cfa(narint.model, data = forsem, estimator = "ML", missing = "FIML")
 summary(narint.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci=T)
 
-
+#no longer part of paper####
 #agreement
 narag.model <- '
   Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
@@ -514,12 +515,13 @@ nagdatabases <- list("parameter estimates" = nagestimates,
                       "fit estimates" = fitnag)
 
 write.xlsx(nagdatabases, file = "nagfit.xlsx", colNames = T, rowNames = T)
+#no longer part of paper####
 
 
 #SECURITY
 
 #Interest security base
-
+set.seed(545)
 medint.model <- '
   needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3+security_freedom_4
   Mainstream=~Nar_5correct  +nar_6correct  +nar_7correct  +nar_8correct  
@@ -527,13 +529,15 @@ medint.model <- '
   traitneedsecurity=~ security_1+security_2+security_3
   finance=~financial_sit_1+financial_sit_2+financial_sit_3
   
-  Micronarratives ~b1*needsecurity+gr_1+traitneedsecurity+finance
-  Mainstream ~b2*needsecurity+gr_1+traitneedsecurity+finance
+  Micronarratives ~b1*needsecurity+d1*gr_1+traitneedsecurity+finance
+  Mainstream ~b2*needsecurity+d2*gr_1+traitneedsecurity+finance
   needsecurity ~ a1*gr_1+traitneedsecurity+finance
   Mainstream~~Micronarratives
   
   ind1 := a1*b1
   ind2 := a1*b2
+  total1 := ind1 + d1
+  total2 := ind2 + d2
  
 '
 
@@ -563,9 +567,6 @@ write.xlsx(medintdatabases, file = "medintfit.xlsx", colNames = T, rowNames = T)
 
 
 
-
-
-
 #Security - agreement base
 
 med.model <- '
@@ -576,21 +577,25 @@ med.model <- '
   finance=~financial_sit_1+financial_sit_2+financial_sit_3
 
 
-  Micronarratives ~b1*needsecurity+gr_1+traitneedsecurity+finance
-  Mainstream ~b2*needsecurity+gr_1+traitneedsecurity+finance
+  Micronarratives ~b1*needsecurity+d1*gr_1+traitneedsecurity+finance
+  Mainstream ~b2*needsecurity+d2*gr_1+traitneedsecurity+finance
   needsecurity ~ a1*gr_1+traitneedsecurity+finance
 
   Mainstream~~Micronarratives
     
   ind1 := a1*b1
   ind2 := a1*b2
+  
+  total1 := ind1 + d1
+  total2 := ind2 + d2
+
 
 '
 
 med.fit <- sem(med.model, data = forsem, estimator = "ML"
-               #, 
-               #missing = "FIML", se = "bootstrap",bootstrap = 5000L, 
-               #parallel ="multicore", verbose= T
+            #   , 
+             #  missing = "FIML", se = "bootstrap",bootstrap = 5000L, 
+              # parallel ="multicore", verbose= T
                )
 summary(med.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci= T)
 
@@ -620,24 +625,33 @@ int_talt.model <- '
   finance=~financial_sit_1+financial_sit_2+financial_sit_3
 
 
-  institution_trust_5 ~ traitneedsecurity+b1*intMicronarratives + b2*intMainstream +gr_1 +needsecurity+finance
-  intMicronarratives ~a1*needsecurity+gr_1+traitneedsecurity+finance
-  intMainstream ~ a2*needsecurity+gr_1+traitneedsecurity+finance
+  institution_trust_5 ~ traitneedsecurity+b1*intMicronarratives + b2*intMainstream +gr_1 +d3*needsecurity+finance
+  intMicronarratives ~a1*needsecurity+d1*gr_1+traitneedsecurity+finance
+  intMainstream ~ a2*needsecurity+d2*gr_1+traitneedsecurity+finance
   needsecurity ~ a3*gr_1+traitneedsecurity+finance
 
   ind1 := a1*b1
   ind2 := a2*b2
-  ind3 := a3*a1
-  ind4 := a3*a2
+  ind3:= a3*a1
+  ind4:= a3*a2
+  
+  total1 := ind1 + d3
+  total2 := ind2 + d3
+  total3 := ind3 + d1
+  total4 := ind4 + d2
+
+
   
   intMicronarratives~~intMainstream
 
 
 '
 
-int_talt.fit <- sem(int_talt.model, data = forsem, estimator = "ML", 
-                    missing = "FIML", se = "bootstrap",bootstrap = 5000L, 
-                    parallel ="multicore", verbose= T)
+int_talt.fit <- sem(int_talt.model, data = forsem, estimator = "ML"
+                    #, 
+                    #missing = "FIML", se = "bootstrap",bootstrap = 5000L, 
+                    #parallel ="multicore", verbose= T
+                    )
 summary(int_talt.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci = T)
 
 
@@ -667,24 +681,32 @@ talt.model <- '
   finance=~financial_sit_1+financial_sit_2+financial_sit_3
  
 
-  institution_trust_5 ~ b1*Micronarratives + b2*Mainstream +gr_1 +needsecurity+traitneedsecurity+finance
-  Micronarratives ~a1*needsecurity+gr_1+traitneedsecurity+finance
-  Mainstream ~ a2*needsecurity+gr_1+traitneedsecurity+finance
+  institution_trust_5 ~ b1*Micronarratives + b2*Mainstream +gr_1 +d3*needsecurity+traitneedsecurity+finance
+  Micronarratives ~a1*needsecurity+d1*gr_1+traitneedsecurity+finance
+  Mainstream ~ a2*needsecurity+d2*gr_1+traitneedsecurity+finance
   needsecurity ~ a3*gr_1+traitneedsecurity+finance
 
   ind1 := a1*b1
   ind2 := a2*b2
-  ind3 := a3*a1
-  ind4 := a3*a2
+  ind3:= a3*a1
+  ind4:= a3*a2
+  
+  total1 := ind1 + d3
+  total2 := ind2 + d3
+  total3 := ind3 + d1
+  total4 := ind4 + d2
+
 
   Micronarratives~~Mainstream
 
 '
 
 
-talt.fit <- sem(talt.model, data = forsem, estimator = "ML", 
-                missing = "FIML", se = "bootstrap",bootstrap = 5000L, 
-                parallel ="multicore", verbose= T)
+talt.fit <- sem(talt.model, data = forsem, estimator = "ML"
+                #, 
+                #missing = "FIML", se = "bootstrap",bootstrap = 5000L, 
+                #parallel ="multicore", verbose= T
+                )
 summary(talt.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci= T)
 
 
@@ -809,21 +831,24 @@ frintmed.model <- '
   traitneedfreedom=~ security_4+security_5+security_6
   finance=~financial_sit_1+financial_sit_2+financial_sit_3
 
-  Micronarratives ~b1*needfreedom+gr_1+traitneedfreedom+finance
-  Mainstream ~b2*needfreedom+gr_1+traitneedfreedom+finance
+  Micronarratives ~b1*needfreedom+d1*gr_1+traitneedfreedom+finance
+  Mainstream ~b2*needfreedom+d2*gr_1+traitneedfreedom+finance
   needfreedom ~ a1*gr_1+traitneedfreedom+finance
 
   Mainstream~~Micronarratives
   
   ind1 := a1*b1
   ind2 := a1*b2
-
+  
+    
+  total1 := ind1 + d1
+  total2 := ind2 + d2
 '
 
 frintmed.fit <- sem(frintmed.model, data = forsem, estimator = "ML"
                     #, 
-                    #missing = "FIML", se = "bootstrap",
-                    #bootstrap = 5000L,parallel ="multicore", verbose= T
+                  #missing = "FIML", se = "bootstrap",
+                   # bootstrap = 5000L,parallel ="multicore", verbose= T
                     )
 summary(frintmed.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci=T)
 
@@ -854,8 +879,8 @@ frmed.model <- '
   traitneedfreedom=~ security_4+security_5+security_6
   finance=~financial_sit_1+financial_sit_2+financial_sit_3
 
-  Micronarratives ~b1*needfreedom+gr_1+traitneedfreedom+finance
-  Mainstream ~b2*needfreedom+gr_1+traitneedfreedom+finance
+  Micronarratives ~b1*needfreedom+d1*gr_1+traitneedfreedom+finance
+  Mainstream ~b2*needfreedom+d2*gr_1+traitneedfreedom+finance
 
   needfreedom ~ a1*gr_1+traitneedfreedom+finance
 
@@ -863,12 +888,17 @@ frmed.model <- '
 
   ind1 := a1*b1
   ind2 := a1*b2
-
+  
+    
+  total1 := ind1 + d1
+  total2 := ind2 + d2
 '
 
-frmed.fit <- sem(frmed.model, data = forsem, estimator = "ML", 
-                 missing = "FIML", se = "bootstrap",
-                 bootstrap = 5000L,parallel ="multicore", verbose= T)
+frmed.fit <- sem(frmed.model, data = forsem, estimator = "ML"
+                 #, 
+                 #missing = "FIML", se = "bootstrap",
+                 #bootstrap = 5000L,parallel ="multicore", verbose= T
+                 )
 summary(frmed.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci=T)
 
 
@@ -896,25 +926,31 @@ frtaltint.model <- '
   traitneedfreedom=~ security_4+security_5+security_6
   finance=~financial_sit_1+financial_sit_2+financial_sit_3
 
-  institution_trust_5 ~ b1*Micronarratives+b2*Mainstream+gr_1+needfreedom+traitneedfreedom+finance
-  Micronarratives ~a1*needfreedom+gr_1+traitneedfreedom+finance
-  Mainstream ~ a2*needfreedom+gr_1+traitneedfreedom+finance
+  institution_trust_5 ~ b1*Micronarratives+b2*Mainstream+gr_1+d3*needfreedom+traitneedfreedom+finance
+  Micronarratives ~a1*needfreedom+d1*gr_1+traitneedfreedom+finance
+  Mainstream ~ a2*needfreedom+d2*gr_1+traitneedfreedom+finance
   needfreedom ~ a3*gr_1 +traitneedfreedom+finance
   institution_trust_5~traitneedfreedom+finance
-
-      
   ind1 := a1*b1
   ind2 := a2*b2
   ind3:= a3*a1
   ind4:= a3*a2
   
+  total1 := ind1 + d3
+  total2 := ind2 + d3
+  total3 := ind3 + d1
+  total4 := ind4 + d2
+
+
   Mainstream~~Micronarratives
 
 '
 
-frtaltint.fit <- sem(frtaltint.model, data = forsem, estimator = "ML", 
+frtaltint.fit <- sem(frtaltint.model, data = forsem, estimator = "ML"
+                     , 
                      missing = "FIML", se = "bootstrap",
-                     bootstrap = 5000L,parallel ="multicore", verbose= T)
+                     bootstrap = 5000L,parallel ="multicore", verbose= T
+                     )
 summary(frtaltint.fit, fit.measures=T, standardized = T, rsquare=TRUE,
         ci=T)
 
@@ -945,9 +981,9 @@ frtalt.model <- '
   traitneedfreedom=~ security_4+security_5+security_6
   finance=~financial_sit_1+financial_sit_2+financial_sit_3
 
-  institution_trust_5 ~ b1*Micronarratives+b2*Mainstream+gr_1+needfreedom+traitneedfreedom+finance
-  Micronarratives ~a1*needfreedom+gr_1+traitneedfreedom+finance
-  Mainstream ~ a2*needfreedom+gr_1+traitneedfreedom+finance
+  institution_trust_5 ~ b1*Micronarratives+b2*Mainstream+gr_1+d3*needfreedom+traitneedfreedom+finance
+  Micronarratives ~a1*needfreedom+d1*gr_1+traitneedfreedom+finance
+  Mainstream ~ a2*needfreedom+d2*gr_1+traitneedfreedom+finance
   needfreedom ~ a3*gr_1 +traitneedfreedom+finance
 
       
@@ -955,14 +991,22 @@ frtalt.model <- '
   ind2 := a2*b2
   ind3:= a3*a1
   ind4:= a3*a2
+  
+  total1 := ind1 + d3
+  total2 := ind2 + d3
+  total3 := ind3 + d1
+  total4 := ind4 + d2
+
   Mainstream~~Micronarratives
 
 '
 
 
-frtalt.fit <- sem(frtalt.model, data = forsem, estimator = "ML", 
+frtalt.fit <- sem(frtalt.model, data = forsem, estimator = "ML"
+                  , 
                   missing = "FIML", se = "bootstrap",
-                  bootstrap = 5000L,parallel ="multicore", verbose= T)
+                  bootstrap = 5000L,parallel ="multicore", verbose= T
+                  )
 summary(frtalt.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci=T)
 
 
@@ -1089,7 +1133,6 @@ ldla.model <- '
   finance=~financial_sit_1+financial_sit_2+financial_sit_3
 
 
-  
   likeMicronarratives ~a1*needsecurity+gr_1+c1*active_soc_media+traitneedsecurity+finance
   likeMainstream ~a2*needsecurity+gr_1+c2*active_soc_media+traitneedsecurity+finance
 
@@ -1097,7 +1140,7 @@ ldla.model <- '
   dislikeMainstream ~a4*needsecurity+gr_1+c4*active_soc_media+traitneedsecurity+finance
   
   needsecurity ~ gr_1 +traitneedsecurity+finance
-  institution_trust_5 ~ needsecurity +active_soc_media+gr_1+traitneedsecurity
+  institution_trust_5 ~ d1*needsecurity +d2*active_soc_media+gr_1+traitneedsecurity
   +b1*likeMicronarratives+b2*likeMainstream+b3*dislikeMicronarratives+
   b4*dislikeMainstream + finance
 
@@ -1111,16 +1154,20 @@ ldla.model <- '
   ind6 := c2*b2
   ind7 := c3*b3
   ind8 := c4*b4
+
   
-  #q3_sm_2~~q3_sm_6
-  #q1_sm_2~~q1_sm_6
-  #q7_sm_2~~q7_sm_6
-  #q6_sm_2~~q6_sm_6
-  #q5_sm_2~~q5_sm_6
-  #q2_sm_2~~q2_sm_6
-  #q4_sm_2~~q4_sm_6
-  #q8_sm_2~~q8_sm_6
-  
+  total1 := ind1 + d1
+  total2 := ind2 + d1
+  total3 := ind3 + d1
+  total4 := ind4 + d1
+
+  total5 := ind5 + d2
+  total6 := ind6 + d2
+  total7 := ind7 + d2
+  total8 := ind8 + d2
+
+
+
   likeMainstream~~dislikeMicronarratives
   likeMicronarratives~~dislikeMainstream
   likeMainstream~~likeMicronarratives
@@ -1133,9 +1180,11 @@ ldla.model <- '
 
 '
 
-ldla.fit <- sem(ldla.model, data = forsem, estimator = "ML", 
-                missing = "FIML", se = "bootstrap",bootstrap = 5000L, 
-                parallel ="multicore", verbose= T)
+ldla.fit <- sem(ldla.model, data = forsem, estimator = "ML"
+                #, 
+                #missing = "FIML", se = "bootstrap",bootstrap = 5000L, 
+                #parallel ="multicore", verbose= T
+                )
 summary(ldla.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci=T)
 
 ldlafitestimates <- parameterestimates(ldla.fit)
@@ -1174,9 +1223,9 @@ fldl.model <- '
   dislikeMainstream ~a4*needfreedom+gr_1+c4*active_soc_media+traitneedfreedom+finance
   
   needfreedom ~ gr_1+traitneedfreedom+finance
-  institution_trust_5 ~ gr_1+active_soc_media+gr_1+traitneedfreedom
+  institution_trust_5 ~ gr_1+d2*active_soc_media+gr_1+traitneedfreedom
   +b1*likeMicronarratives+b2*likeMainstream+b3*dislikeMicronarratives+
-  b4*dislikeMainstream + finance
+  b4*dislikeMainstream + finance+d1*needfreedom
     
   ind1 := a1*b1
   ind2 := a2*b2
@@ -1188,6 +1237,15 @@ fldl.model <- '
   ind7 := c3*b3
   ind8 := c4*b4
   
+  total1 := ind1 + d1
+  total2 := ind2 + d1
+  total3 := ind3 + d1
+  total4 := ind4 + d1
+
+  total5 := ind5 + d2
+  total6 := ind6 + d2
+  total7 := ind7 + d2
+  total8 := ind8 + d2
   
   likeMainstream~~dislikeMicronarratives
   likeMicronarratives~~dislikeMainstream
@@ -1199,9 +1257,11 @@ fldl.model <- '
   active_soc_media~~needfreedom
 '
 
-fldl.fit <- sem(fldl.model, data = forsem, estimator = "ML", 
-                missing = "FIML", se = "bootstrap",bootstrap = 5000L, 
-                parallel ="multicore", verbose= T)
+fldl.fit <- sem(fldl.model, data = forsem, estimator = "ML"
+                #, 
+        #        missing = "FIML", se = "bootstrap",bootstrap = 5000L, 
+         #       parallel ="multicore", verbose= T
+        )
 summary(fldl.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci=T)
 
 fldlfitestimates <- parameterestimates(fldl.fit)
@@ -1219,7 +1279,10 @@ fldlfitdatabases <- list("parameter estimates" = fldlfitestimates,
 write.xlsx(fldlfitdatabases, file = "fldlfit.xlsx", colNames = T, rowNames = T)
 
 
-vuongtest(medint.fit, frintmed.fit)
+vuongtest(frtalt.fit, frtalt.fit)
+
+
+
 
 
 
@@ -1235,21 +1298,19 @@ both.model <- '
   traitneedsecurity=~ security_1+security_2+security_3  
   finance=~financial_sit_1+financial_sit_2+financial_sit_3
   traitneedfreedom=~ security_4+security_5+security_6
-
-  Micronarratives ~b1*needsecurity+gr_1+traitneedsecurity+finance+traitneedfreedom+b3*needfreedom
-  Mainstream ~b2*needsecurity+gr_1+traitneedsecurity+finance+traitneedfreedom+b4*needfreedom
-  needsecurity ~ a1*gr_1+traitneedsecurity+finance
-  needfreedom ~ a2*gr_1+traitneedfreedom+finance
   
+  needs =~ needsecurity+needfreedom
+  traitneeds =~ traitneedsecurity+ traitneedfreedom
+
+  Micronarratives ~b1*needs+gr_1+traitneeds+finance
+  Mainstream ~b2*needs+gr_1+traitneeds+finance
+  needs ~ a1*gr_1+traitneeds+finance
+
 
   Mainstream~~Micronarratives
-  needsecurity~~needfreedom
-  traitneedsecurity~~traitneedfreedom
-    
+  
   ind1 := a1*b1
   ind2 := a1*b2
-  ind3 := a2*b3
-  ind4 := a2*b4
 
 '
 
@@ -1260,4 +1321,13 @@ both.fit <- sem(both.model, data = forsem, estimator = "ML"
 )
 summary(both.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci= T)
 
+
+library(simsem)
+
+
+vuongtest(medint.fit, frintmed.fit)
+vuongtest(med.fit, frmed.fit)
+vuongtest(int_talt.fit, frtaltint.fit)
+vuongtest(int_talt.fit, frtaltint.fit)
+vuongtest(talt.fit, frtalt.fit)
 

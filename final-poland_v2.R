@@ -114,9 +114,6 @@ contr <- mand[mand$gr ==3, ]
 vol<- mand[mand$gr ==2, ]
 mandat<- mand[mand$gr ==1, ]
 
-#create the two levels 
-onlymanipulation$gr <- ordered(onlymanipulation$gr, levels = c("1", "2"))
-
 #install.packages("fastDummies")
 
 # Load the library
@@ -220,7 +217,6 @@ sdcors3 <- data.frame(round(sapply(cors3, sd, na.rm=T), digits= 1)) #control
 
 #3 group
 mand$gr <- as.factor(mand$gr)
-library(knitr)
 a <- aov(ssec ~ gr+tsec+finan, data=mand)
 summary(a)
 eta_squared(a)
