@@ -79,12 +79,14 @@ mand <- clean
 
 #subsetting and building means 
 
+narratives <- data.frame(micronarratives,micronarratives_ag, mainstream, mainstream_ag)
+narcors<-cor(narratives, use= "pairwise.complete.obs")
 
 micronarratives <- subset(mand[,c(69,71,73,75)])
 mand$micronarratives <- apply(micronarratives, 1, mean, na.rm=T)
 alpha(micronarratives)
 
-mainstream <- subset(mand[,c(77,79,81,83)])
+mainstream <- subset(mand[,c(188:191)])
 mand$mainstream <- apply(mainstream, 1, mean, na.rm=T)
 alpha(mainstream)
 
@@ -515,7 +517,7 @@ nagdatabases <- list("parameter estimates" = nagestimates,
                       "fit estimates" = fitnag)
 
 write.xlsx(nagdatabases, file = "nagfit.xlsx", colNames = T, rowNames = T)
-#no longer part of paper####
+
 
 
 #SECURITY
@@ -630,30 +632,31 @@ int_talt.model <- '
   intMainstream ~ a2*needsecurity+d2*gr_1+traitneedsecurity+finance
   needsecurity ~ a3*gr_1+traitneedsecurity+finance
 
-  ind1 := a1*b1
+ ind1 := a1*b1
   ind2 := a2*b2
   ind3:= a3*a1
   ind4:= a3*a2
+  
+  ind5:= b1*a1*a3
   
   total1 := ind1 + d3
   total2 := ind2 + d3
   total3 := ind3 + d1
   total4 := ind4 + d2
+  total5 := ind5 + d3
 
 
   
   intMicronarratives~~intMainstream
-
-
 '
 
 int_talt.fit <- sem(int_talt.model, data = forsem, estimator = "ML"
                     #, 
-                    #missing = "FIML", se = "bootstrap",bootstrap = 5000L, 
+                    #missing = "FIML", se = "bootstrap",bootstrap = 500L, 
                     #parallel ="multicore", verbose= T
                     )
 summary(int_talt.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci = T)
-
+lavaan::parameterEstimates(int_talt.fit, boot.ci.type = "bca.simple")
 
 int_taltfitestimates <- parameterestimates(int_talt.fit)
 standardisedint_taltfit <- standardizedSolution(int_talt.fit)
@@ -691,10 +694,13 @@ talt.model <- '
   ind3:= a3*a1
   ind4:= a3*a2
   
+  ind5:= b1*a1*a3
+  
   total1 := ind1 + d3
   total2 := ind2 + d3
   total3 := ind3 + d1
   total4 := ind4 + d2
+  total5 := ind5 + d3
 
 
   Micronarratives~~Mainstream
@@ -1330,4 +1336,133 @@ vuongtest(med.fit, frmed.fit)
 vuongtest(int_talt.fit, frtaltint.fit)
 vuongtest(int_talt.fit, frtaltint.fit)
 vuongtest(talt.fit, frtalt.fit)
+
+
+
+
+nars <- subset(forsem[, c("nar1_end", "nar_1", "nar2_end", "nar_2","nar_3", "nar3_end",
+                          "nar4_end","nar_4", "Nar_5correct", "nar5_end", "nar_6correct", 
+                          "nar6_end","nar7_end","nar_7correct", "nar_8correct", "nar8_end")])
+forsem$nar1_t <- apply(nars[, 1:2], 1, mean)
+forsem$nar2_t <- apply(nars[, 3:4], 1, mean)
+forsem$nar3_t <- apply(nars[, 5:6], 1, mean)
+forsem$nar4_t <- apply(nars[, 7:8], 1, mean)
+forsem$nar5_t <- apply(nars[, 9:10], 1, mean)
+forsem$nar6_t <- apply(nars[, 11:12], 1, mean)
+forsem$nar7_t <- apply(nars[, 13:14], 1, mean)
+forsem$nar8_t <- apply(nars[, 15:16], 1, mean)
+#no longer part of paper####
+
+
+#i beg for simpler models
+narint.model <- '
+  Mainstream=~Nar_5correct  +nar_6correct  +nar_7correct  +nar_8correct  
+  Micronarratives=~nar_1+nar_2+nar_3+ nar_4 
+  Mainstream~~Micronarratives
+
+'
+
+narint.fit <- cfa(narint.model, data = forsem, estimator = "ML", missing = "FIML")
+summary(narint.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci=T)
+#agreement
+narag.model <- '
+  Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
+  Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end 
+
+  Mainstream~~Micronarratives
+    
+'
+
+narag.fit <- cfa(narag.model, data = forsem, estimator = "ML", missing = "FIML")
+summary(narag.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci=T)
+
+
+#combined
+nar.model <- '
+  Mainstream=~nar5_end  +nar6_end  +nar7_end  +nar8_end  +Nar_5correct  +nar_6correct  +nar_7correct  +nar_8correct  
+  Micronarratives=~nar1_end+nar2_end+nar3_end+ nar4_end +nar_1+nar_2+nar_3+ nar_4 
+
+  Mainstream~~Micronarratives
+  
+  nar5_end~~Nar_5correct
+  nar6_end~~nar_6correct
+  nar7_end~~nar_7correct
+  nar8_end~~nar_8correct
+  nar1_end~~nar_1
+  nar2_end~~nar_2
+  nar3_end~~nar_3
+  nar4_end~~nar_4
+    
+'
+
+#combined
+nar2.model <- '
+  Mainstreamag=~nar5_end  +nar6_end  +nar7_end  +nar8_end  
+  Mainstreamint =~Nar_5correct  +nar_6correct  +nar_7correct  +nar_8correct  
+  Micronarrativesag=~nar1_end+nar2_end+nar3_end+ nar4_end 
+  Micronarrativesint=~nar_1+nar_2+nar_3+ nar_4 
+
+  Mainstreamag~~Micronarrativesag
+  Mainstreamint~~Micronarrativesint
+  Mainstreamag~~Micronarrativesint
+  Mainstreamint~~Micronarrativesag
+
+
+  
+  nar5_end~~Nar_5correct
+  nar6_end~~nar_6correct
+  nar7_end~~nar_7correct
+  nar8_end~~nar_8correct
+  nar1_end~~nar_1
+  nar2_end~~nar_2
+  nar3_end~~nar_3
+  nar4_end~~nar_4
+    
+'
+nar2.fit <- cfa(nar2.model, data = forsem, estimator = "ML", missing = "FIML")
+summary(nar2.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci=T)
+
+anova(nar.fit,nar2.fit)
+#nar2.fit as the winner 
+
+
+#new dataset for combination
+pl<- subset(forsem[, c(52:58, 149, 205, 218:225)])
+
+simple.model <- '
+  needfreedom =~ security_freedom_5+security_freedom_6+security_freedom_7
+  needsecurity =~ security_freedom_1+security_freedom_2+security_freedom_3+security_freedom_4
+  needs =~ needsecurity+needfreedom
+
+  Mainstream=~nar5_t  +nar6_t  +nar7_t  +nar8_t 
+  Micronarratives=~nar1_t+nar2_t+nar3_t+ nar4_t 
+
+  Micronarratives ~b1*needs+d1*gr_1
+  Mainstream ~b2*needs+d2*gr_1
+
+  needs ~ a1*gr_1
+
+  Mainstream~~Micronarratives
+
+  ind1 := a1*b1
+  ind2 := a1*b2
+    
+  total1 := ind1 + d1
+  total2 := ind2 + d2
+'
+
+simple.fit <- sem(simple.model, data = pl, estimator = "ML"
+                 #, 
+                 #missing = "FIML", se = "bootstrap",
+                 #bootstrap = 5000L,parallel ="multicore", verbose= T
+)
+summary(simple.fit, fit.measures=T, standardized = T, rsquare=TRUE, ci=T)
+write.csv(pl, "pl.csv") 
+mi<- modificationindices(simple.fit)
+View(mi)
+
+cor(forsem$mainstream_ag, forsem$mainstream)
+#.71
+cor(forsem$micronarratives, forsem$micronarratives_ag)
+#.64
 
